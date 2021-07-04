@@ -363,17 +363,19 @@ end
 -->8
 -- top-level flow
 
+local pc
+
 function _init()
-	humm:init{
-	 frn=0.6,
-	 imp=2,
-	 jce=300,
+	pc = humm{
+	 friction=0.6,
+	 impulse=2,
+	 juice=300,
 	}
 end
 
 function _update()
-	humm:update()
-	if humm.state ~= 'splode' then
+	pc:update()
+	if pc.state ~= 'splode' then
 		for n in all(npcs) do
 			n:update()
 		end
@@ -383,7 +385,7 @@ end
 
 function _draw()
 	cls(3)
-	humm:draw()
+	pc:draw()
 	for n in all(npcs) do
 		n:draw()
 	end
