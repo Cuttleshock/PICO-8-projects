@@ -73,6 +73,10 @@ npcs = {}
 
 local actor = obj:extend{
 	age=0,
+	x=0,
+	y=0,
+	dx=0,
+	dy=0,
 --	w=8,
 --	h=8
 }
@@ -171,6 +175,8 @@ end
 
 local humm = actor:extend{
 	name='pc',
+	x=32,
+	y=64,
 	state='fly',--splode,drink...
 	friction=0.6,
 	impulse=2,
@@ -333,10 +339,17 @@ function humm:update()
 		end
 	elseif (self.state=='splode') then
 		if btn(🅾️) or btn(❎) then
+			-- there has to be a
+			-- better way
 			self:init{
 			 frn=0.6,
 			 imp=2,
 			 jce=300,
+			 x=32,
+			 y=64,
+			 dx=0,
+			 dy=0,
+			 state='fly',
 			}
 			for n in all(npcs) do
 				del(npcs,n)
