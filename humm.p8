@@ -180,7 +180,7 @@ local humm = actor:extend{
 	 	splode={17,17,17,17,17,17,17,17,17,18,18,18,18,18,18,18,18},
 	},
 }
-asdf
+
 function humm:init(o)
 	self.__super.init(self,o)
 	self.x = o.x or 32
