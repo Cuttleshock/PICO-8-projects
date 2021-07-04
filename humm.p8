@@ -3,8 +3,13 @@ version 32
 __lua__
 -- oo structuring
 
-function nop() end
-local obj = {init = nop}
+function ctor(self,o)
+	for k,v in pairs(o) do
+		self[k] = v or self[k]
+	end
+end
+
+local obj = {init = ctor}
 obj.__index = obj
 
 function obj:__call(...)
@@ -81,14 +86,6 @@ local actor = obj:extend{
 --	h=8
 }
 
-function actor:init(o)
-	self.sprites = o.sprs or self.sprites
-	self.x=o.x or 0
-	self.y=o.y or 0
-	self.dx=o.dx or 0
-	self.dy=o.dy or 0
-end
-
 function actor:draw()
 	local frame=
 	 self.age%#self.sprites
@@ -110,26 +107,15 @@ local block = actor:extend{
   name='blk',
   sprites={3},
 }
-function block:init(o)
-	self.__super.init(self,o)
-end
 local spike = actor:extend{
 	name='spk',
 	sprites={4},
 }
-function spike:init(o)
-	self.__super.init(self,o)
-end
-
 local flower = actor:extend{
 	name='flw',
 	sprites={5},
 	juice=0,
 }
-function flower:init(o)
-	self.__super.init(self,o)
-	self.juice = o.juice or self.juice
-end
 function flower:draw()
 	self.__super.draw(self)
 	rectfill(
@@ -186,15 +172,6 @@ local humm = actor:extend{
 	 	splode={17,17,17,17,17,17,17,17,17,18,18,18,18,18,18,18,18},
 	},
 }
-
-function humm:init(o)
-	self.__super.init(self,o)
-	self.x = o.x or 32
-	self.y = o.y or 64
-	self.friction = o.frn or self.friction
-	self.impulse = o.imp or self.impulse
-	self.juice = o.jce or self.juice
-end
 
 function humm:draw()
 	local _sprs=self.sprites[self.state]
@@ -283,7 +260,6 @@ function humm:handlecol(oldx,oldy)
 		 and y < n.y + 8
 		) then
 			if (n.name == 'blk') then
-				-- _d('col, x:'..x ..' y:'..y)
 				local oldxin =
 				 oldx > n.x - 8 and
 				 oldx < n.x + 8
@@ -307,7 +283,6 @@ function humm:handlecol(oldx,oldy)
 					-- just push left
 					x = n.x - 8
 				end
-				-- _d('x:'..x ..' y:'..y)
 				self.x = x
 				self.y = y
 			elseif (n.name == 'spk') then
@@ -342,9 +317,9 @@ function humm:update()
 			-- there has to be a
 			-- better way
 			self:init{
-			 frn=0.6,
-			 imp=2,
-			 jce=300,
+			 friction=0.6,
+			 impulse=2,
+			 juice=300,
 			 x=32,
 			 y=64,
 			 dx=0,
