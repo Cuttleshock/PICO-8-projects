@@ -342,7 +342,7 @@ local pc
 
 function _init()
 	pc = humm{
-	 friction=0.6,
+	 friction=0.8,
 	 impulse=2,
 	 juice=300,
 	}
