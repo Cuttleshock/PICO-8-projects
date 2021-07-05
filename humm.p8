@@ -58,6 +58,8 @@ function _d(str,name)
 			add(debug._names,name)
 		end
 		debug[name] = str
+		 or (str==nil and 'nil')
+		 or (str==false and 'false')
 	end
 end
 
