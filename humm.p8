@@ -51,7 +51,7 @@ _sgtype = nil
 _sgparms = nil
 
 -- actors
-local pc
+pc = nil
 npcs = {}
 
 function signal(name,parms)
