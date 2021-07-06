@@ -81,7 +81,7 @@ function _d_pop()
 	end
 	for i,n in ipairs(debug._names) do
 		print(
-		 n .. ': ' .. debug[n],
+		 n..': '..debug[n],
 		 0,
 		 64 + 6*i
 		)
@@ -94,8 +94,8 @@ local actor = obj:extend{
 	y=0,
 	dx=0,
 	dy=0,
---	w=8,
---	h=8
+	w=8,
+	h=8,
 }
 
 function actor:draw()
@@ -117,12 +117,24 @@ end
 
 local block = actor:extend{
   name='blk',
-  sprites={3},
 }
+function block:draw()
+	rectfill(
+	 self.x,
+	 self.y,
+	 self.x+self.w-1,
+	 self.y+self.h-1,
+	 12
+	)
+end
+
 local spike = actor:extend{
 	name='spk',
 	sprites={4},
+	w=7,
+	h=7,
 }
+
 local flower = actor:extend{
 	name='flw',
 	sprites={5},
@@ -134,7 +146,8 @@ function flower:draw()
 	 self.x,
 	 self.y+9,
 	 self.x+self.juice*fdmult,
-	 self.y+11
+	 self.y+11,
+	 7
 	)
 end
 
@@ -151,7 +164,8 @@ function updatenpcs()
 			add(npcs,block{
 			 x=124,
 			 y=8+flr(rnd(112)),
-			 dx=-0.5
+			 dx=-0.5,
+			 w=4,
 			})
 		elseif actorseed < 0.6 then
 			add(npcs,spike{
@@ -199,7 +213,8 @@ function humm:draw()
 	 10,
 	 3,
 	 10+self.juice*fdmult,
-	 5
+	 5,
+	 7
 	)
 end
 
@@ -264,36 +279,37 @@ function humm:updatepos()
 end
 
 function humm:handlecol(oldx,oldy)
-	local x,y=self.x,self.y
+	local x,y,w,h
+	 =self.x,self.y,self.w,self.h
 	for n in all(npcs) do
-		if ( x + 8 > n.x
-		 and x < n.x + 8
-		 and y + 8 > n.y
-		 and y < n.y + 8
+		if ( x + w > n.x
+		 and x < n.x + n.w
+		 and y + h > n.y
+		 and y < n.y + n.h
 		) then
 			if (n.name == 'blk') then
 				local oldxin =
-				 oldx > n.x - 8 and
-				 oldx < n.x + 8
+				 oldx + w > n.x and
+				 oldx < n.x + n.w
 				local oldyin =
-				 oldy > n.y - 8 and
-				 oldy < n.y + 8
+				 oldy + h > n.y and
+				 oldy < n.y + n.h
 				if oldxin and not oldyin then
 					if oldy < n.y then
-						y = n.y - 8
+						y = n.y - h
 					else
-						y = n.y + 8
+						y = n.y + n.h
 					end
 				elseif oldyin and not oldxin then
 					if oldx < n.x then
-						x = n.x - 8
+						x = n.x - w
 					else
-						x = n.x + 8
+						x = n.x + n.w
 					end
 				elseif oldyin and oldxin then
 					-- fully inside object
 					-- just push left
-					x = n.x - 8
+					x = n.x - w
 				end
 				self.x = x
 				self.y = y
