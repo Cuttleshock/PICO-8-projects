@@ -48,6 +48,7 @@ maxage = 2*3*2*5*7*2*3
 
 -- state
 nextspawn = 0
+actorseed = rnd(1)
 _time = 0
 _score = 0
 _fsm = 'title' --game,gmover...
@@ -165,7 +166,6 @@ function updatenpcs()
 		end
 	end
 	if nextspawn < 0 then
-		local actorseed = rnd(1)
 		if (actorseed < 0.3
 		 or pc.juice < 60
 		) then
@@ -191,6 +191,7 @@ function updatenpcs()
 			 h=_h,
 			})
 		end
+		actorseed = rnd(1)
 		nextspawn = 20+flr(rnd(20))
 	end
 end
