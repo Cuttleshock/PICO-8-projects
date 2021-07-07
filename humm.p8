@@ -49,6 +49,7 @@ fdmult = 0.25 -- fuel display mult
 -- state
 nextspawn = 0
 _time = 0
+_fsm = 'title' --game,gmover...
 _sgtype = nil
 _sgparms = nil
 
@@ -346,15 +347,7 @@ function humm:update()
 			self.state = 'splode'
 		end
 	elseif (self.state=='splode') then
-		if btn(🅾️) or btn(❎) then
-			signal('reset',{
-			 humm={
-			  friction=0.8,
-			  impulse=2,
-			  juice=300,
-			 },
-			})
-		end
+		signal('gmover')
 	end
 	self.age += 1
 	self.age %= maxage
@@ -362,10 +355,17 @@ end
 
 function popsignal()
 	if _sgtype == 'reset' then
-		pc = humm(_sgparms.humm)
+		pc = nil
 		for n in all(npcs) do
 			del(npcs,n)
 		end
+		_fsm = 'title'
+	elseif _sgtype=='start' then
+		pc = humm(_sgparms.humm)
+		_fsm = 'game'
+		_time = 0
+	elseif _sgtype=='gmover' then
+		_fsm = 'gmover'
 	end
 	_sgtype,_sgparms=nil,nil
 end
@@ -374,30 +374,52 @@ end
 -- top-level flow
 
 function _init()
-	pc = humm{
-	 friction=0.8,
-	 impulse=2,
-	 juice=300,
-	}
+	-- currently nothing!
 end
 
 function _update()
-	pc:update()
-	if pc.state ~= 'splode' then
+	if _fsm == 'title' then
+		if btnp(🅾️) or btnp(❎) then
+			signal('start',{
+			 humm={
+			  friction=0.8,
+			  impulse=2,
+			  juice=300,
+			 },
+			})
+		end
+	elseif _fsm == 'game' then
+		pc:update()
 		for n in all(npcs) do
 			n:update()
 		end
 		updatenpcs()
+	elseif _fsm == 'gmover' then
+		if btnp(🅾️) or btnp(❎) then
+			signal('reset')
+		end
 	end
 	_time += eps
 	popsignal()
 end
 
 function _draw()
-	cls(3)
-	pc:draw()
-	for n in all(npcs) do
-		n:draw()
+	if _fsm == 'title' then
+		cls(2)
+		print('title screen',40,40)
+	elseif _fsm == 'game' then
+		cls(3)
+		pc:draw()
+		for n in all(npcs) do
+			n:draw()
+		end
+	elseif _fsm == 'gmover' then
+		cls(3)
+		pc:draw()
+		for n in all(npcs) do
+			n:draw()
+		end
+		print('game over',46,40,14)
 	end
 	_d_pop()
 end
