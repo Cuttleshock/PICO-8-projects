@@ -46,10 +46,17 @@ scrnbt = 128
 minspeed = 0.25
 maxage = 2*3*2*5*7*2*3
 lvls = {
-	[0x0000.0100]=2,
-	[0x0000.0200]=3,
-	[0x0000.0300]=4,
-	[0x0000.0400]=5,
+	[0x0000.0200]=2,
+	[0x0000.0400]=3,
+	[0x0000.0700]=4,
+	[0x0000.0a00]=5,
+}
+mns = { -- maxnextscores
+	80,
+	70,
+	62,
+	55,
+	50,
 }
 
 -- state
@@ -358,7 +365,7 @@ function humm:handlecol(oldx,oldy)
 				elseif not n.depleted then
 					n.depleted = true
 					signal('score',{
-					 score=3,
+					 score=2+_lvl,
 					})
 				end
 			end
@@ -428,6 +435,7 @@ function _update()
 		_time += eps
 		if lvls[_time] then
 			_lvl = lvls[_time]
+			_maxnextscore = mns[_lvl]
 		end
 		_tonextscore -= 1
 		if _tonextscore == 0 then
