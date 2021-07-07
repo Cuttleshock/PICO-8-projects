@@ -45,11 +45,18 @@ scrntp = 10
 scrnbt = 128
 minspeed = 0.25
 maxage = 2*3*2*5*7*2*3
+lvls = {
+	[0x0000.0100]=2,
+	[0x0000.0200]=3,
+	[0x0000.0300]=4,
+	[0x0000.0400]=5,
+}
 
 -- state
 nextspawn = 0
 actorseed = rnd(1)
 _time = 0
+_lvl = 1
 _maxnextscore = 80
 _tonextscore = _maxnextscore
 _score = 0
@@ -419,6 +426,9 @@ function _update()
 		end
 		updatenpcs()
 		_time += eps
+		if lvls[_time] then
+			_lvl = lvls[_time]
+		end
 		_tonextscore -= 1
 		if _tonextscore == 0 then
 			_score += 1
@@ -461,9 +471,15 @@ function _draw()
 		end
 		print(
 		 'score: '.._score,
-		 84,
+		 64,
 		 2,
 		 8
+		)
+		print(
+		 'lvl'.._lvl,
+		 112,
+		 2,
+		 11
 		)
 	elseif _fsm == 'gmover' then
 		cls()
@@ -473,6 +489,12 @@ function _draw()
 		 scrnrt,
 		 scrnbt,
 		 3
+		)
+		print(
+		 'lvl'.._lvl,
+		 112,
+		 2,
+		 11
 		)
 		pc:draw()
 		for n in all(npcs) do
