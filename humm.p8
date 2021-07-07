@@ -176,7 +176,7 @@ function updatenpcs()
 		end
 	end
 	if nextspawn < 0 then
-		if (actorseed < 0.3
+		if (actorseed < 0.3-0.02*_lvl
 		 or pc.juice < 60
 		) then -- todo: and no non
 		-- depleted flower exists?
@@ -184,26 +184,26 @@ function updatenpcs()
 			 juice=80,
 			 x=scrnrt,
 			 y=scrntp+flr(rnd(scrnbt-scrntp-9)),
-			 dx=-0.5,
+			 dx=-0.5-0.05*_lvl,
 			})
 		elseif actorseed < 0.6 then
 			add(npcs,spike{
 			 x=scrnrt,
 			 y=scrntp+flr(rnd(scrnbt-scrntp-8)),
-			 dx=-0.5,
+			 dx=-0.5-0.05*_lvl,
 			})
 		else
-			local _h = 8+flr(rnd(16))
+			local _h = 8+flr(rnd(15+_lvl))
 			add(npcs,block{
 			 x=scrnrt,
 			 y=scrntp+flr(rnd(scrnbt-scrntp-_h)),
-			 dx=-0.5,
+			 dx=-0.5-0.05*_lvl,
 			 w=3,
 			 h=_h,
 			})
 		end
 		actorseed = rnd(1)
-		nextspawn = 20+flr(rnd(20))
+		nextspawn = 20-_lvl+flr(rnd(20-_lvl))
 	end
 end
 
