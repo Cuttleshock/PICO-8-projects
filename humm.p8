@@ -148,6 +148,7 @@ local flower = actor:extend{
 	name='flw',
 	sprites={5},
 	juice=0,
+	depleted=false,
 }
 function flower:draw()
 	self.__super.draw(self)
@@ -156,7 +157,7 @@ function flower:draw()
 	 self.y+9,
 	 self.x+16*self.juice/80,
 	 self.y+11,
-	 self.juice == 0 and 8 or 11
+	 self.depleted and 8 or 11
 	)
 end
 
@@ -170,11 +171,12 @@ function updatenpcs()
 	if nextspawn < 0 then
 		if (actorseed < 0.3
 		 or pc.juice < 60
-		) then
+		) then -- todo: and no non
+		-- depleted flower exists?
 			add(npcs,flower{
 			 juice=80,
 			 x=scrnrt,
-			 y=scrntp+flr(rnd(scrnbt-scrntp-8)),
+			 y=scrntp+flr(rnd(scrnbt-scrntp-9)),
 			 dx=-0.5,
 			})
 		elseif actorseed < 0.6 then
@@ -346,6 +348,11 @@ function humm:handlecol(oldx,oldy)
 						n.juice -= 0.5
 						self.juice += 1
 					end
+				elseif not n.depleted then
+					n.depleted = true
+					signal('score',{
+					 score=3,
+					})
 				end
 			end
 		end
@@ -381,6 +388,8 @@ function popsignal()
 		_time = 0
 	elseif _sgtype=='gmover' then
 		_fsm = 'gmover'
+	elseif _sgtype=='score' then
+		_score += _sgparms.score
 	end
 	_sgtype,_sgparms=nil,nil
 end
