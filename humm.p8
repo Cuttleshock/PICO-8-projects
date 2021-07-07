@@ -442,6 +442,12 @@ function _draw()
 		for n in all(npcs) do
 			n:draw()
 		end
+		print(
+		 'score: '.._score,
+		 84,
+		 2,
+		 8
+		)
 	elseif _fsm == 'gmover' then
 		cls()
 		rectfill(
