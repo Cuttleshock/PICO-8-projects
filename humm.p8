@@ -166,7 +166,7 @@ function updatenpcs()
 	end
 	if nextspawn < 0 then
 		local actorseed = rnd(1)
-		if (actorseed < 0.4
+		if (actorseed < 0.3
 		 or pc.juice < 60
 		) then
 			add(npcs,flower{
@@ -182,15 +182,16 @@ function updatenpcs()
 			 dx=-0.5,
 			})
 		else
+			local _h = 8+flr(rnd(16))
 			add(npcs,block{
 			 x=scrnrt,
-			 y=scrntp+flr(rnd(scrnbt-scrntp-16)),
+			 y=scrntp+flr(rnd(scrnbt-scrntp-_h)),
 			 dx=-0.5,
-			 w=4,
-			 h=16,
+			 w=3,
+			 h=_h,
 			})
 		end
-		nextspawn = 30+flr(rnd(30))
+		nextspawn = 20+flr(rnd(20))
 	end
 end
 
