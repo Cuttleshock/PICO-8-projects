@@ -40,9 +40,9 @@ sqrt2 = sqrt(2)
 invsqrt2 = 1/sqrt(2)
 eps = 0x0000.0001
 scrnlt = 0
-scrnrt = 120
-scrntp = 0
-scrnbt = 120
+scrnrt = 128
+scrntp = 10
+scrnbt = 128
 minspeed = 0.25
 maxage = 2*3*2*5*7*2*3
 fdmult = 0.25 -- fuel display mult
@@ -170,20 +170,20 @@ function updatenpcs()
 		) then
 			add(npcs,flower{
 			 juice=80,
-			 x=124,
-			 y=8+flr(rnd(112)),
+			 x=scrnrt,
+			 y=scrntp+flr(rnd(scrnbt-scrntp-8)),
 			 dx=-0.5,
 			})
 		elseif actorseed < 0.6 then
 			add(npcs,spike{
-			 x=124,
-			 y=8+flr(rnd(112)),
+			 x=scrnrt,
+			 y=scrntp+flr(rnd(scrnbt-scrntp-8)),
 			 dx=-0.5,
 			})
 		else
 			add(npcs,block{
-			 x=124,
-			 y=8+flr(rnd(112)),
+			 x=scrnrt,
+			 y=scrntp+flr(rnd(scrnbt-scrntp-16)),
 			 dx=-0.5,
 			 w=4,
 			 h=16,
@@ -267,18 +267,19 @@ end
 function humm:updatepos()
 	local x = self.x + self.dx
 	local y = self.y + self.dy
+	local w,h = self.w,self.h
 
-	if (x>scrnrt) then
-		x = scrnrt
+	if x+w>scrnrt then
+		x = scrnrt-w
 		self.state = 'splode'
-	elseif (x<scrnlt) then
+	elseif x<scrnlt then
 		x = scrnlt
 		self.state = 'splode'
 	end
-	if (y>scrnbt) then
-		y = scrnbt
+	if y+h>scrnbt then
+		y = scrnbt-h
 		self.state = 'splode'
-	elseif (y<scrntp) then
+	elseif y<scrntp then
 		y = scrntp
 		self.state = 'splode'
 	end
