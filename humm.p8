@@ -49,6 +49,7 @@ fdmult = 0.25 -- fuel display mult
 -- state
 nextspawn = 0
 _time = 0
+_score = 0
 _fsm = 'title' --game,gmover...
 _sgtype = nil
 _sgparms = nil
@@ -363,8 +364,10 @@ function popsignal()
 	elseif _sgtype=='start' then
 		pc = humm(_sgparms.humm)
 		_fsm = 'game'
+		_score = 0
 		_time = 0
 	elseif _sgtype=='gmover' then
+		_score += flr(_time*3000)
 		_fsm = 'gmover'
 	end
 	_sgtype,_sgparms=nil,nil
@@ -394,19 +397,29 @@ function _update()
 			n:update()
 		end
 		updatenpcs()
+		_time += eps
 	elseif _fsm == 'gmover' then
 		if btnp(🅾️) or btnp(❎) then
 			signal('reset')
 		end
 	end
-	_time += eps
 	popsignal()
 end
 
 function _draw()
 	if _fsm == 'title' then
 		cls(2)
-		print('title screen',40,40)
+		print(
+		 '\#1title screen',
+		 40,
+		 40,
+		 10
+		)
+		print(
+		 '\#1press any button',
+		 32,
+		 46
+		)
 	elseif _fsm == 'game' then
 		cls(3)
 		pc:draw()
@@ -419,7 +432,18 @@ function _draw()
 		for n in all(npcs) do
 			n:draw()
 		end
-		print('game over',46,40,14)
+		print(
+		 '\#1game over',
+		 46,
+		 40,
+		 14
+		)
+		print(
+		 '\#1score: '.._score,
+		 50-2*#tostr(_score),
+		 46,
+		 8
+		)
 	end
 	_d_pop()
 end
