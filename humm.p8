@@ -423,13 +423,27 @@ function _draw()
 		 46
 		)
 	elseif _fsm == 'game' then
-		cls(3)
+		cls()
+		rectfill(
+		 scrnlt,
+		 scrntp,
+		 scrnrt,
+		 scrnbt,
+		 3
+		)
 		pc:draw()
 		for n in all(npcs) do
 			n:draw()
 		end
 	elseif _fsm == 'gmover' then
-		cls(3)
+		cls()
+		rectfill(
+		 scrnlt,
+		 scrntp,
+		 scrnrt,
+		 scrnbt,
+		 3
+		)
 		pc:draw()
 		for n in all(npcs) do
 			n:draw()
