@@ -37,6 +37,7 @@ end
 
 -- consts/magic numbers
 sqrt2 = sqrt(2)
+invsqrt2 = 1/sqrt(2)
 eps = 0x0000.0001
 scrnlt = 0
 scrnrt = 120
@@ -245,8 +246,8 @@ function humm:updatespeed()
 		btny += imp
 	end
 	if (btnx~=0 and btny~=0) then
-	 	btnx /= sqrt2
-	 	btny /= sqrt2
+	 	btnx *= invsqrt2
+	 	btny *= invsqrt2
 	end
 	dx += btnx
 	dy += btny
