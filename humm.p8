@@ -50,6 +50,8 @@ maxage = 2*3*2*5*7*2*3
 nextspawn = 0
 actorseed = rnd(1)
 _time = 0
+_maxnextscore = 80
+_tonextscore = _maxnextscore
 _score = 0
 _fsm = 'title' --game,gmover...
 _sgtype = nil
@@ -378,7 +380,6 @@ function popsignal()
 		_score = 0
 		_time = 0
 	elseif _sgtype=='gmover' then
-		_score += flr(_time*3000)
 		_fsm = 'gmover'
 	end
 	_sgtype,_sgparms=nil,nil
@@ -409,6 +410,11 @@ function _update()
 		end
 		updatenpcs()
 		_time += eps
+		_tonextscore -= 1
+		if _tonextscore == 0 then
+			_score += 1
+			_tonextscore = _maxnextscore
+		end
 	elseif _fsm == 'gmover' then
 		if btnp(🅾️) or btnp(❎) then
 			signal('reset')
