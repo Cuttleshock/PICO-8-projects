@@ -35,8 +35,9 @@ end
 -->8
 -- main logic
 
--- consts
+-- consts/magic numbers
 sqrt2 = sqrt(2)
+eps = 0x0000.0001
 scrnlt = 0
 scrnrt = 120
 scrntp = 0
@@ -47,6 +48,7 @@ fdmult = 0.25 -- fuel display mult
 
 -- state
 nextspawn = 0
+_time = 0
 _sgtype = nil
 _sgparms = nil
 
@@ -387,6 +389,7 @@ function _update()
 		end
 		updatenpcs()
 	end
+	_time += eps
 	popsignal()
 end
 
