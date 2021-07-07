@@ -45,7 +45,6 @@ scrntp = 10
 scrnbt = 128
 minspeed = 0.25
 maxage = 2*3*2*5*7*2*3
-fdmult = 0.25 -- fuel display mult
 
 -- state
 nextspawn = 0
@@ -152,9 +151,9 @@ function flower:draw()
 	rectfill(
 	 self.x,
 	 self.y+9,
-	 self.x+self.juice*fdmult,
+	 self.x+16*self.juice/80,
 	 self.y+11,
-	 7
+	 self.juice == 0 and 8 or 11
 	)
 end
 
@@ -221,12 +220,18 @@ function humm:draw()
 	 self.y
 	)
 	spr(21,2,0)
+	local jcefrac = self.juice/300
+	local jceclr =
+	    jcefrac < 0.25 and 8
+	 or jcefrac < 0.5 and 9
+	 or jcefrac < 0.75 and 10
+	 or 11
 	rectfill(
 	 10,
 	 3,
-	 10+self.juice*fdmult,
+	 10+50*jcefrac,
 	 5,
-	 7
+	 jceclr
 	)
 end
 
