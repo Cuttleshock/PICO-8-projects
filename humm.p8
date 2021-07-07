@@ -94,7 +94,7 @@ function _d_pop()
 end
 
 local actor = obj:extend{
-	age=0,
+	sprage=0,
 	x=0,
 	y=0,
 	dx=0,
@@ -104,8 +104,10 @@ local actor = obj:extend{
 }
 
 function actor:draw()
+	self.sprage += 1
+	self.sprage %= maxage
 	local frame=
-	 self.age%#self.sprites
+	 self.sprage%#self.sprites
 	spr(
 	 self.sprites[frame+1],
 	 self.x,
@@ -208,9 +210,11 @@ local humm = actor:extend{
 }
 
 function humm:draw()
+	self.sprage += 1
+	self.sprage %= maxage
 	local _sprs=self.sprites[self.state]
 	local frame=
-	 self.age%#_sprs
+	 self.sprage%#_sprs
 	spr(
 	 _sprs[frame+1],
 	 self.x,
@@ -352,8 +356,6 @@ function humm:update()
 	elseif (self.state=='splode') then
 		signal('gmover')
 	end
-	self.age += 1
-	self.age %= maxage
 end
 
 function popsignal()
