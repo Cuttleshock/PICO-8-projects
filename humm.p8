@@ -391,6 +391,7 @@ end
 
 function popsignal()
 	if _sgtype == 'reset' then
+		_time = 0
 		pc = nil
 		for n in all(npcs) do
 			del(npcs,n)
@@ -422,6 +423,7 @@ end
 
 function _update()
 	if _fsm == 'title' then
+		_time += eps
 		if btnp(🅾️) or btnp(❎) then
 			signal('start',{
 			 humm={
@@ -460,16 +462,19 @@ function _draw()
 	if _fsm == 'title' then
 		cls(2)
 		print(
-		 '\#1title screen',
-		 40,
-		 40,
-		 10
+		 '\#1\^w\^t\fbh\fau\f9m\f8m',
+		 49,
+		 48,
+		 11
 		)
-		print(
-		 '\#1press any button',
-		 32,
-		 46
-		)
+		if _time*0x100*0x100%40<25 then
+			print(
+			 '\#1press any button',
+			 32,
+			 62,
+			 10
+			)
+		end
 	elseif _fsm == 'game' then
 		cls()
 		rectfill(
