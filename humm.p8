@@ -180,10 +180,9 @@ function updatenpcs()
 	for n in all(npcs) do
 		if (n.x < scrnlt) then
 			del(npcs,n)
-		elseif (
-		    n.y < scrntp
-		 or n.y+n.h > scrnbt
-		) then
+		elseif n.y<scrntp and n.dy<0 then
+			n.dy = -n.dy
+		elseif n.y+n.h>scrnbt and n.dy>0 then
 			n.dy = -n.dy
 		end
 	end
