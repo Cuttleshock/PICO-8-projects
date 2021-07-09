@@ -142,6 +142,7 @@ end
 
 local block = actor:extend{
   name='blk',
+  clr=12,
 }
 function block:draw()
 	rectfill(
@@ -149,9 +150,19 @@ function block:draw()
 	 self.y,
 	 self.x+self.w-1,
 	 self.y+self.h-1,
-	 12
+	 self.clr
 	)
 end
+
+local lvlline = block:extend{
+	name='lvl',
+	y=scrntp,
+	w=2,
+	h=scrnbt-scrntp,
+	clr=14,
+	lvl=1,
+	hit=false,
+}
 
 local spike = actor:extend{
 	name='spk',
@@ -573,6 +584,14 @@ function humm:handlecol(oldx,oldy)
 					 score=2+_lvl,
 					})
 				end
+			elseif n.name=='lvl' and not n.hit then
+				n.hit = true
+				n.clr = 11
+				self.juice=min(self.juice+100,300)
+				_score += 5*n.lvl-5
+				_lvl = n.lvl
+				_maxnextscore = mns[n.lvl]
+				sfx(3,1)
 			end
 		end
 	end
@@ -646,9 +665,11 @@ function _update()
 		updatenpcs()
 		_time += eps
 		if lvls[_time] then
-			_lvl = lvls[_time]
-			_maxnextscore = mns[_lvl]
-			sfx(3,1)
+			add(npcs,lvlline{
+			 x=scrnrt,
+			 lvl=lvls[_time],
+			 dx=-0.5-0.05*_lvl,
+			})
 		end
 		_tonextscore -= 1
 		if _tonextscore == 0 then
