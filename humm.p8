@@ -61,7 +61,9 @@ mns = { -- maxnextscores
 
 -- state
 nextspawn = 0
+_delayspawn = 0
 actorseed = rnd(1)
+_specialseed = 0
 _time = 0
 _lvl = 1
 _maxnextscore = 80
@@ -187,8 +189,15 @@ function updatenpcs()
 		end
 	end
 	if nextspawn < 0 then
-		spawnnpc()
-		actorseed = rnd(1)
+		if _delayspawn>0 then
+			_delayspawn -= 1
+			if _delayspawn == 0 then
+				spawnnpcspecial()
+			end
+		else
+			spawnnpc()
+			actorseed = rnd(1)
+		end
 		nextspawn = 20-_lvl+flr(rnd(20-_lvl))
 	end
 end
@@ -363,7 +372,8 @@ function spawnnpc()
 			 dy=_dy,
 			})
 		elseif actorseed < 0.6 then
-			-- wall of spikes
+			_delayspawn=2
+			_specialseed=1
 		else
 			local _h = 28+flr(rnd(15+4*_lvl))
 			add(npcs,block{
@@ -375,6 +385,36 @@ function spawnnpc()
 			 dy=0.5*(flr(rnd(3))-1),
 			})
 		end
+	end
+end
+
+function spawnnpcspecial()
+	if _specialseed == 2 then
+		return
+	elseif _lvl==5 then
+		local gap=flr(actorseed*9)+1
+		local _y=scrntp+2
+		for x=1,9 do
+			if x~=gap then
+				add(npcs,spike{
+				 x=scrnrt,
+				 y=_y,
+				 dx=-0.75,
+				})
+				_y += 10.5
+			else
+				_y += 12
+				add(npcs,flower{
+				 juice=80,
+				 x=scrnrt,
+				 y=_y,
+				 dx=-0.75,
+				})
+				_y += 22
+			end
+		end
+		_delayspawn = 1
+		_specialseed = 2
 	end
 end
 
