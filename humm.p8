@@ -520,12 +520,13 @@ function humm:handlecol(oldx,oldy)
 				self.state = 'splode'
 			elseif (n.name == 'flw') then
 				if n.juice > 0 then
+					local jcmult = 19+_lvl
 					if self.juice < 300 then
-						n.juice -= 1
-						self.juice += 2
+						n.juice-=jcmult/20
+						self.juice+=jcmult/10
 					else
-						n.juice -= 0.5
-						self.juice += 1
+						n.juice-=jcmult/40
+						self.juice+=jcmult/20
 					end
 				elseif not n.depleted then
 					n.depleted = true
