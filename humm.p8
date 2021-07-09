@@ -180,37 +180,202 @@ function updatenpcs()
 	for n in all(npcs) do
 		if (n.x < scrnlt) then
 			del(npcs,n)
+		elseif (
+		    n.y < scrntp
+		 or n.y+n.h > scrnbt
+		) then
+			n.dy = -n.dy
 		end
 	end
 	if nextspawn < 0 then
-		if (actorseed < 0.3-0.02*_lvl
+		spawnnpc()
+		actorseed = rnd(1)
+		nextspawn = 20-_lvl+flr(rnd(20-_lvl))
+	end
+end
+
+function spawnnpc()
+	if _lvl == 1 then
+		if (actorseed < 0.28
 		 or pc.juice < 60
-		) then -- todo: and no non
-		-- depleted flower exists?
+		) then
 			add(npcs,flower{
 			 juice=80,
 			 x=scrnrt,
 			 y=scrntp+flr(rnd(scrnbt-scrntp-12)),
-			 dx=-0.5-0.05*_lvl,
+			 dx=-0.55,
 			})
 		elseif actorseed < 0.6 then
 			add(npcs,spike{
 			 x=scrnrt,
 			 y=scrntp+flr(rnd(scrnbt-scrntp-8)),
-			 dx=-0.5-0.05*_lvl,
+			 dx=-0.55,
 			})
 		else
-			local _h = 8+flr(rnd(15+_lvl))
+			local _h=16+flr(rnd(15))
 			add(npcs,block{
 			 x=scrnrt,
 			 y=scrntp+flr(rnd(scrnbt-scrntp-_h)),
-			 dx=-0.5-0.05*_lvl,
+			 dx=-0.55,
 			 w=3,
 			 h=_h,
 			})
 		end
-		actorseed = rnd(1)
-		nextspawn = 20-_lvl+flr(rnd(20-_lvl))
+	elseif _lvl == 2 then
+		if (actorseed < 0.26
+		 or pc.juice < 60
+		) then
+			add(npcs,flower{
+			 juice=80,
+			 x=scrnrt,
+			 y=scrntp+flr(rnd(scrnbt-scrntp-12)),
+			 dx=-0.6,
+			})
+		elseif actorseed < 0.6 then
+			local _h=scrntp+flr(rnd(scrnbt-scrntp-18))
+			add(npcs,spike{
+			 x=scrnrt,
+			 y=_h,
+			 dx=-0.6,
+			})
+			add(npcs,spike{
+			 x=scrnrt,
+			 y=_h+10,
+			 dx=-0.6,
+			})
+		else
+			local _h = 20+flr(rnd(15))
+			add(npcs,block{
+			 x=scrnrt,
+			 y=scrntp+flr(rnd(scrnbt-scrntp-_h)),
+			 dx=-0.6,
+			 w=3,
+			 h=_h,
+			})
+		end
+	elseif _lvl == 3 then
+		if (actorseed < 0.24
+		 or pc.juice < 60
+		) then
+			add(npcs,flower{
+			 juice=80,
+			 x=scrnrt,
+			 y=scrntp+flr(rnd(scrnbt-scrntp-12)),
+			 dx=-0.65,
+			})
+		elseif actorseed < 0.6 then
+			local _h=scrntp+flr(rnd(scrnbt-scrntp-18))
+			local _dy=0.4*(flr(rnd(3))-1)
+			add(npcs,spike{
+			 x=scrnrt,
+			 y=_h,
+			 dx=-0.65,
+			 dy=_dy,
+			})
+			add(npcs,spike{
+			 x=scrnrt,
+			 y=_h+10,
+			 dx=-0.65,
+			 dy=_dy,
+			})
+		else
+			local _h = 24+flr(rnd(15))
+			add(npcs,block{
+			 x=scrnrt,
+			 y=scrntp+flr(rnd(scrnbt-scrntp-_h)),
+			 dx=-0.65,
+			 w=3,
+			 h=_h,
+			})
+		end
+	elseif _lvl == 4 then
+		if (actorseed < 0.22
+		 or pc.juice < 60
+		) then
+			add(npcs,flower{
+			 juice=80,
+			 x=scrnrt,
+			 y=scrntp+flr(rnd(scrnbt-scrntp-12)),
+			 dx=-0.7,
+			 dy=0.5*(flr(rnd(3))-1),
+			})
+		elseif actorseed < 0.6 then
+			local _h=scrntp+flr(rnd(scrnbt-scrntp-18))
+			local _dy=0.5*(flr(rnd(3))-1)
+			add(npcs,spike{
+			 x=scrnrt,
+			 y=_h,
+			 dx=-0.7,
+			 dy=_dy,
+			})
+			add(npcs,spike{
+			 x=scrnrt,
+			 y=_h+10,
+			 dx=-0.7,
+			 dy=_dy,
+			})
+		else
+			local _h = 26+flr(rnd(15+4*_lvl))
+			add(npcs,block{
+			 x=scrnrt,
+			 y=scrntp+flr(rnd(scrnbt-scrntp-_h)),
+			 dx=-0.7,
+			 w=3,
+			 h=_h,
+			 dy=0.5*(flr(rnd(3))-1),
+			})
+		end
+	elseif _lvl == 5 then
+		if (actorseed < 0.2
+		 or pc.juice < 60
+		) then
+			local _yf=scrntp+flr(rnd(scrnbt-scrntp-12))
+			local _ys = _yf-(scrnbt-scrntp)/2
+			if _ys < 0 then
+				_ys += scrnbt-scrntp-8
+			end
+			local _dy=0.5*(flr(rnd(3))-1)
+			add(npcs,flower{
+			 juice=80,
+			 x=scrnrt,
+			 y=_yf,
+			 dx=-0.75,
+			 dy=_dy,
+			})
+			add(npcs,spike{
+			 x=scrnrt,
+			 y=_ys,
+			 dx=-0.75,
+			 dy=_dy,
+			})
+		elseif actorseed < 0.54 then
+			local _h=scrntp+flr(rnd(scrnbt-scrntp-18))
+			local _dy=0.5*(flr(rnd(3))-1)
+			add(npcs,spike{
+			 x=scrnrt,
+			 y=_h,
+			 dx=-0.75,
+			 dy=_dy,
+			})
+			add(npcs,spike{
+			 x=scrnrt,
+			 y=_h+10,
+			 dx=-0.75,
+			 dy=_dy,
+			})
+		elseif actorseed < 0.6 then
+			-- wall of spikes
+		else
+			local _h = 28+flr(rnd(15+4*_lvl))
+			add(npcs,block{
+			 x=scrnrt,
+			 y=scrntp+flr(rnd(scrnbt-scrntp-_h)),
+			 dx=-0.75,
+			 w=3,
+			 h=_h,
+			 dy=0.5*(flr(rnd(3))-1),
+			})
+		end
 	end
 end
 
