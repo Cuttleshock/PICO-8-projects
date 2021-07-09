@@ -330,7 +330,7 @@ function spawnnpc()
 		) then
 			local _yf=scrntp+flr(rnd(scrnbt-scrntp-12))
 			local _ys = _yf-(scrnbt-scrntp)/2
-			if _ys < 0 then
+			if _ys < scrntp then
 				_ys += scrnbt-scrntp-8
 			end
 			local _dy=0.5*(flr(rnd(3))-1)
