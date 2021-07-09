@@ -605,6 +605,7 @@ function humm:update()
 		self:handlecol(oldx,oldy)
 		self.juice -= 1
 		if (self.juice <= 0) then
+			self.juice = 0
 			self.state = 'splode'
 		end
 	elseif (self.state=='splode') then
