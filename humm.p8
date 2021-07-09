@@ -464,8 +464,7 @@ function _draw()
 		print(
 		 '\#1\^w\^t\fbh\fau\f9m\f8m',
 		 49,
-		 48,
-		 11
+		 48
 		)
 		if _time*0x100*0x100%40<25 then
 			print(
