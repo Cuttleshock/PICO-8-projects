@@ -111,7 +111,7 @@ end
 
 local actor = obj:extend{
 	sprage=0,
-	x=0,
+	x=scrnrt,
 	y=0,
 	dx=0,
 	dy=0,
@@ -140,6 +140,7 @@ end
 
 local block = actor:extend{
   name='blk',
+  w=3,
   clr=12,
 }
 function block:draw()
@@ -172,7 +173,7 @@ local spike = actor:extend{
 local flower = actor:extend{
 	name='flw',
 	sprites={5},
-	juice=0,
+	juice=80,
 	depleted=false,
 }
 function flower:draw()
@@ -212,24 +213,19 @@ function spawnnpc()
 		 or pc.juice < 60
 		) then
 			add(npcs,flower{
-			 juice=80,
-			 x=scrnrt,
 			 y=scrntp+flr(rnd(scrnbt-scrntp-12)),
 			 dx=-0.55,
 			})
 		elseif actorseed < 0.6 then
 			add(npcs,spike{
-			 x=scrnrt,
 			 y=scrntp+flr(rnd(scrnbt-scrntp-8)),
 			 dx=-0.55,
 			})
 		else
 			local _h=16+flr(rnd(15))
 			add(npcs,block{
-			 x=scrnrt,
 			 y=scrntp+flr(rnd(scrnbt-scrntp-_h)),
 			 dx=-0.55,
-			 w=3,
 			 h=_h,
 			})
 		end
@@ -238,30 +234,24 @@ function spawnnpc()
 		 or pc.juice < 60
 		) then
 			add(npcs,flower{
-			 juice=80,
-			 x=scrnrt,
 			 y=scrntp+flr(rnd(scrnbt-scrntp-12)),
 			 dx=-0.6,
 			})
 		elseif actorseed < 0.6 then
 			local _h=scrntp+flr(rnd(scrnbt-scrntp-18))
 			add(npcs,spike{
-			 x=scrnrt,
 			 y=_h,
 			 dx=-0.6,
 			})
 			add(npcs,spike{
-			 x=scrnrt,
 			 y=_h+10,
 			 dx=-0.6,
 			})
 		else
 			local _h = 20+flr(rnd(15))
 			add(npcs,block{
-			 x=scrnrt,
 			 y=scrntp+flr(rnd(scrnbt-scrntp-_h)),
 			 dx=-0.6,
-			 w=3,
 			 h=_h,
 			})
 		end
@@ -270,8 +260,6 @@ function spawnnpc()
 		 or pc.juice < 60
 		) then
 			add(npcs,flower{
-			 juice=80,
-			 x=scrnrt,
 			 y=scrntp+flr(rnd(scrnbt-scrntp-12)),
 			 dx=-0.65,
 			})
@@ -279,13 +267,11 @@ function spawnnpc()
 			local _h=scrntp+flr(rnd(scrnbt-scrntp-18))
 			local _dy=0.4*(flr(rnd(3))-1)
 			add(npcs,spike{
-			 x=scrnrt,
 			 y=_h,
 			 dx=-0.65,
 			 dy=_dy,
 			})
 			add(npcs,spike{
-			 x=scrnrt,
 			 y=_h+10,
 			 dx=-0.65,
 			 dy=_dy,
@@ -293,10 +279,8 @@ function spawnnpc()
 		else
 			local _h = 24+flr(rnd(15))
 			add(npcs,block{
-			 x=scrnrt,
 			 y=scrntp+flr(rnd(scrnbt-scrntp-_h)),
 			 dx=-0.65,
-			 w=3,
 			 h=_h,
 			})
 		end
@@ -305,8 +289,6 @@ function spawnnpc()
 		 or pc.juice < 60
 		) then
 			add(npcs,flower{
-			 juice=80,
-			 x=scrnrt,
 			 y=scrntp+flr(rnd(scrnbt-scrntp-12)),
 			 dx=-0.7,
 			 dy=0.5*(flr(rnd(3))-1),
@@ -315,13 +297,11 @@ function spawnnpc()
 			local _h=scrntp+flr(rnd(scrnbt-scrntp-18))
 			local _dy=0.5*(flr(rnd(3))-1)
 			add(npcs,spike{
-			 x=scrnrt,
 			 y=_h,
 			 dx=-0.7,
 			 dy=_dy,
 			})
 			add(npcs,spike{
-			 x=scrnrt,
 			 y=_h+10,
 			 dx=-0.7,
 			 dy=_dy,
@@ -329,10 +309,8 @@ function spawnnpc()
 		else
 			local _h = 26+flr(rnd(15+4*_lvl))
 			add(npcs,block{
-			 x=scrnrt,
 			 y=scrntp+flr(rnd(scrnbt-scrntp-_h)),
 			 dx=-0.7,
-			 w=3,
 			 h=_h,
 			 dy=0.5*(flr(rnd(3))-1),
 			})
@@ -344,7 +322,6 @@ function spawnnpc()
 			for x=1,9 do
 				if x~=gap then
 					add(npcs,spike{
-					 x=scrnrt,
 					 y=_y,
 					 dx=-0.75,
 					})
@@ -352,8 +329,6 @@ function spawnnpc()
 				else
 					_y += 12
 					add(npcs,flower{
-					 juice=80,
-					 x=scrnrt,
 					 y=_y,
 					 dx=-0.75,
 					})
@@ -371,14 +346,11 @@ function spawnnpc()
 			end
 			local _dy=0.5*(flr(rnd(3))-1)
 			add(npcs,flower{
-			 juice=80,
-			 x=scrnrt,
 			 y=_yf,
 			 dx=-0.75,
 			 dy=_dy,
 			})
 			add(npcs,spike{
-			 x=scrnrt,
 			 y=_ys,
 			 dx=-0.75,
 			 dy=_dy,
@@ -387,13 +359,11 @@ function spawnnpc()
 			local _h=scrntp+flr(rnd(scrnbt-scrntp-18))
 			local _dy=0.5*(flr(rnd(3))-1)
 			add(npcs,spike{
-			 x=scrnrt,
 			 y=_h,
 			 dx=-0.75,
 			 dy=_dy,
 			})
 			add(npcs,spike{
-			 x=scrnrt,
 			 y=_h+10,
 			 dx=-0.75,
 			 dy=_dy,
@@ -404,10 +374,8 @@ function spawnnpc()
 		else
 			local _h = 28+flr(rnd(15+4*_lvl))
 			add(npcs,block{
-			 x=scrnrt,
 			 y=scrntp+flr(rnd(scrnbt-scrntp-_h)),
 			 dx=-0.75,
-			 w=3,
 			 h=_h,
 			 dy=0.5*(flr(rnd(3))-1),
 			})
@@ -658,7 +626,6 @@ function _update()
 		_time += eps
 		if lvls[_time] then
 			add(npcs,lvlline{
-			 x=scrnrt,
 			 lvl=lvls[_time],
 			 dx=-0.5-0.05*_lvl,
 			})
