@@ -36,7 +36,6 @@ end
 -- main logic
 
 -- consts/magic numbers
-sqrt2 = sqrt(2)
 invsqrt2 = 1/sqrt(2)
 eps = 0x0000.0001
 scrnlt = 0
@@ -66,8 +65,7 @@ actorseed = rnd(1)
 _specialseed = 0
 _time = 0
 _lvl = 1
-_maxnextscore = 80
-_tonextscore = _maxnextscore
+_tonextscore = mns[_lvl]
 _score = 0
 _fsm = 'title' --game,gmover...
 _sgtype = nil
@@ -590,7 +588,6 @@ function humm:handlecol(oldx,oldy)
 				self.juice=min(self.juice+100,300)
 				_score += 5*n.lvl-5
 				_lvl = n.lvl
-				_maxnextscore = mns[n.lvl]
 				sfx(3,1)
 			end
 		end
@@ -627,6 +624,8 @@ function popsignal()
 	elseif _sgtype=='start' then
 		sfx(0,0)
 		pc = humm(_sgparms.humm)
+		_lvl = 1
+		_tonextscore = mns[_lvl]
 		_fsm = 'game'
 		_score = 0
 		_time = 0
@@ -673,9 +672,9 @@ function _update()
 			})
 		end
 		_tonextscore -= 1
-		if _tonextscore == 0 then
+		if _tonextscore <= 0 then
 			_score += 1
-			_tonextscore = _maxnextscore
+			_tonextscore = mns[_lvl]
 		end
 	elseif _fsm == 'gmover' then
 		if btnp(🅾️) or btnp(❎) then
