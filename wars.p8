@@ -183,6 +183,7 @@ end
 
 function highlight_range(u)
 	-- clear, then init w/ starting location
+	path={ cost=0 }
 	highlight = { unit=u }
 	search = { xy2n(u.x,u.y) }
 	highlight[xy2n(u.x,u.y)] = xy2n(0xff,0xff,0,1) -- mvmt irrelevant?
@@ -297,10 +298,16 @@ function control_battle()
 	if battle_state==STATE_B_SELECT then
 		if btnp(🅾️) then
 			sfx(2)
-			-- crucial to check this first: else, can't take
-			-- action on highlighted unit's square
-			if highlight[xy2n(pointer.x,pointer.y)] then
-				-- move into highlight_action() or something
+			local unit = nil
+			for u in all(units) do
+				if u.x==pointer.x and u.y==pointer.y then
+					unit = u
+					break
+				end
+			end
+			if unit and unit!=highlight.unit then
+				highlight_range(unit)
+			elseif highlight[xy2n(pointer.x,pointer.y)] then
 				active_menu.ref=action_menu
 				active_menu.y=1
 				active_menu.w=40
@@ -308,24 +315,13 @@ function control_battle()
 				active_menu.on_exit=(function() battle_state=STATE_B_SELECT end)
 				battle_state=STATE_B_MENU
 			else
-				local unit = nil
-				for u in all(units) do
-					if u.x==pointer.x and u.y==pointer.y then
-						unit = u
-						break
-					end
-				end
-				if unit then
-					highlight_range(unit)
-				else
-					highlight={}
-					active_menu.ref=battle_menu
-					active_menu.x=1
-					active_menu.y=1
-					active_menu.w=60
-					active_menu.on_exit=(function() battle_state=STATE_B_SELECT end)
-					battle_state=STATE_B_MENU
-				end
+				highlight={}
+				active_menu.ref=battle_menu
+				active_menu.x=1
+				active_menu.y=1
+				active_menu.w=60
+				active_menu.on_exit=(function() battle_state=STATE_B_SELECT end)
+				battle_state=STATE_B_MENU
 			end
 		elseif btnp(❎) then
 			highlight={}
