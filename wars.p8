@@ -10,42 +10,133 @@ k_tilesize = 16
 -- divides 1~10, 12, 14, 15:
 k_timermax = 2*3*2*5*7*2*3
 
+-- 'enums'
+STATE_G_MAIN_MENU=1
+STATE_G_BATTLE=2
+
+STATE_B_SELECT=101
+STATE_B_HIGHLIGHT=102
+STATE_B_ACTION=103
+STATE_B_MENU=104
+STATE_B_ANIM=105
+
+-- units, menus
 slime_base = {
 	spr=5,
 	frames=2,
 	range=3,
 }
 
+function noop() end
+
+main_menu = {
+	{ text='battle', cb=(function () push_game_state(STATE_G_BATTLE, init_battle) end) },
+	{ text='nothing', cb=noop },
+	{ text='also no', cb=noop },
+}
+
+battle_menu = {
+	{ text='nope', cb=noop },
+	{ text='cool stats', cb=noop },
+	{ text='exit to menu', cb=(function () push_game_state(STATE_G_MAIN_MENU, init_main_menu) end) },
+	{ text='end turn', cb=noop },
+}
+
+action_menu = {
+	{ text='move', cb=noop },
+	{ text='attack', cb=noop },
+}
+
+debug = {_names={}}
+function d_(str)
+	add(debug,str)
+	if (#debug > 12) deli(debug,1)
+end
+
+function popd_()
+	cursor(cam_x*k_tilesize,cam_y*k_tilesize)
+	for d in all(debug) do
+		-- print(tostr(d,true))
+		print(d)
+	end
+end
+
 -->8
--- definitions
+-- state and update methods
 
--- unit data
+-- state control
+game_state=STATE_G_MAIN_MENU
+queued_game_state=nil
+queued_game_state_cb=noop
+battle_state=STATE_B_ANIM
+
+-- global state
+menu_item=1
+active_menu={ ref=nil }
+
+timer=0
+
+-- battle-specific state
 units={}
-mapunits={}
-
--- cursor
 pointer={}
-
--- highlighted area with paths
 highlight={}
 path={ cost=0 }
 
--- battle state
-timer=0
-map_w=16
-map_h=16
+map_w=0
+map_h=0
 cam_x=0
 cam_y=0
+
+-- todo: use coroutines!
+animate=noop
+anim_on_exit=noop
+
+-- note that this is misleadingly named:
+-- it's a replacement, not a real push.
+-- todo: use coroutines?
+function push_game_state(state, cb)
+	queued_game_state=state
+	queued_game_state_cb=cb or noop
+end
+
+function pop_game_state()
+	if (not queued_game_state) return
+
+	game_state=queued_game_state
+	queued_game_state_cb()
+
+	queued_game_state=nil
+	queued_game_state_cb=noop
+end
+
+function init_main_menu()
+	active_menu.ref=main_menu
+	active_menu.x=40
+	active_menu.y=20
+	active_menu.w=48
+	active_menu.on_exit=noop
+	menu_item=1
+end
+
+function init_battle()
+	battle_state=STATE_B_ANIM
+	animate=(function() return true end)
+	anim_on_exit=(function() battle_state=STATE_B_SELECT end)
+	clear_menu()
+	init_pointer(3,3)
+	make_unit(7,5,slime_base)
+	make_unit(4,6,slime_base)
+	highlight={}
+	path={ cost=0 }
+	map_w=16
+	map_h=16
+end
 
 function init_pointer(x,y)
 	pointer.x = x
 	pointer.y = y
-	pointer.dx = 0
-	pointer.dy = 0
 	pointer.spr = k_pointerspr
 	pointer.frames = k_pointerframes
-	pointer.frame = 0
-	pointer.gridlocked = true
 end
 
 function make_unit(x,y,base)
@@ -57,19 +148,17 @@ function make_unit(x,y,base)
 		spr=base.spr,
 		frames=base.frames,
 		range=base.range,
-		frame=0,
 		visible=true,
 		unit=true,
 	}
 	add(units, unit)
-	mapunits[xy2n(x,y)] = unit
 	return unit -- to allow further tweaks
 end
 
 -- serialised data structure (no. bits):
 -- x y cost mvmt unused
 -- 8 8 4    4    8
--- needed to write highlight and check mapunits
+-- needed to write highlight
 function xy2n(x,y,cost,mvmt)
 	cost = cost or 0
 	mvmt = mvmt or 0
@@ -115,11 +204,38 @@ function highlight_range(u)
 	end
 end
 
-function dehighlight()
-	highlight = {}
+function clear_menu()
+	active_menu.ref=nil
+	menu_item=1
 end
 
-function control()
+function control_menu()
+	if btnp(🅾️) then
+		print(menu_item)
+		return active_menu.ref[menu_item].cb()
+	elseif btnp(❎) then
+		clear_menu()
+		return active_menu.on_exit()
+	end
+
+	local dm = 0
+	if btnp(⬇️) then
+		dm=1
+	elseif btnp(⬆️) then
+		dm=-1
+	end
+
+	if dm != 0 then
+		sfx(3)
+		menu_item=(menu_item+dm-1)%#active_menu.ref+1
+	end
+end
+
+function update_timer()
+	timer=(timer+1)%k_timermax
+end
+
+function move_pointer()
 	local dx,dy=0,0
 	local updown = btn(⬆️) or btn(⬇️)
 
@@ -145,33 +261,105 @@ function control()
 		dx = -1
 	end
 
+	-- keep from leaving map
+	if (pointer.x+dx<0 or pointer.x+dx>map_w) dx=0
+	if (pointer.y+dy<0 or pointer.y+dy>map_h) dy=0
+
 	if dx != 0 or dy != 0 then
+		pointer.x += dx
+		pointer.y += dy
 		sfx(1)
 	end
-
-	if btnp(🅾️) then
-		sfx(2)
-		local unit = nil
-		for u in all(units) do
-			if u.x==pointer.x and u.y==pointer.y then
-				unit = u
-				break
-			end
-		end
-		if unit then
-			highlight_range(unit)
-		else
-			dehighlight()
-		end
-	elseif btnp(❎) then
-		dehighlight()
-	end
-
-	pointer.dx,pointer.dy=dx,dy
 end
 
-function update_world()
-	timer=(timer+1)%k_timermax
+function control_battle()
+	-- pretty sure we don't need to separate STATE_B_HIGHLIGHT
+	if battle_state==STATE_B_SELECT then
+		if btnp(🅾️) then
+			sfx(2)
+			local unit = nil
+			for u in all(units) do
+				if u.x==pointer.x and u.y==pointer.y then
+					unit = u
+					break
+				end
+			end
+			if unit then
+				highlight_range(unit)
+				battle_state=STATE_B_HIGHLIGHT
+			else
+				active_menu.ref=battle_menu
+				active_menu.x=1
+				active_menu.y=1
+				active_menu.w=60
+				active_menu.on_exit=(function() battle_state=STATE_B_SELECT end)
+				battle_state=STATE_B_MENU
+			end
+		else
+			move_pointer()
+		end
+	elseif battle_state==STATE_B_HIGHLIGHT then
+		if btnp(🅾️) then
+			sfx(2)
+			-- crucial to check this first: else, can't take
+			-- action on highlighted unit's square
+			if highlight[xy2n(pointer.x,pointer.y)] then
+				-- move into highlight_action() or something
+				active_menu.ref=action_menu
+				active_menu.y=1
+				active_menu.w=40
+				active_menu.x=126-active_menu.w
+				active_menu.on_exit=(function() battle_state=STATE_B_HIGHLIGHT end)
+				battle_state=STATE_B_ACTION
+			else
+				local unit = nil
+				for u in all(units) do
+					if u.x==pointer.x and u.y==pointer.y then
+						unit = u
+						break
+					end
+				end
+				if unit then
+					highlight_range(unit)
+				else
+					highlight={}
+					active_menu.ref=battle_menu
+					active_menu.x=1
+					active_menu.y=1
+					active_menu.w=60
+					active_menu.on_exit=(function() battle_state=STATE_B_SELECT end)
+					battle_state=STATE_B_MENU
+				end
+			end
+		elseif btnp(❎) then
+			highlight={}
+			battle_state=STATE_B_SELECT
+		else
+			move_pointer()
+		end
+	elseif battle_state==STATE_B_ACTION then
+		control_menu()
+	elseif battle_state==STATE_B_MENU then
+		control_menu() -- oh can these also be consolidated?
+	elseif battle_state==STATE_B_ANIM then
+		if animate() or btnp(🅾️) or btnp(❎) then
+			anim_on_exit()
+		end
+	end
+end
+
+function update_actor(a)
+	if a.dx != 0 or a.dy != 0 then
+		a.x,a.y = a.x+a.dx,a.y+a.dy
+		a.dx,a.dy = 0,0
+		if (a.sfx) sfx(a.sfx)
+	end
+end
+
+function update_units()
+	for u in all(units) do
+		update_actor(u)
+	end
 end
 
 -- need to run this after moving pointer
@@ -188,31 +376,6 @@ function update_camera()
 		cam_y = max(0,pointer.y-2)
 	elseif pointer.y > cam_y+5 then
 		cam_y = min(map_h-8,pointer.y-5)
-	end
-end
-
-function update_actor(a)
-	if a.dx != 0 or a.dy != 0 then
-		local newx,newy = a.x+a.dx,a.y+a.dy
-		if a.unit then
-			mapunits[xy2n(a.x,a.y)] = nil
-			mapunits[xy2n(newx,newy)] = a
-		end
-		a.x,a.y=newx,newy
-		a.dx,a.dy = 0,0
-	end
-
-	-- keep actors from falling off the map
-	if a.gridlocked then
-		if (a.x < 0) a.x = 0
-		if (a.x > map_w-1) a.x = map_w-1
-		if (a.y < 0) a.y = 0
-		if (a.y > map_h-1) a.y = map_h-1
-	end
-
-	-- arguably global behaviour
-	if timer % k_animspeed == 0 then
-		a.frame = (a.frame+1)%a.frames
 	end
 end
 
@@ -249,7 +412,12 @@ function update_path()
 	local x,y=pointer.x,pointer.y
 	local n=xy2n(x,y)
 
-	if (not highlight[n]) return
+	if battle_state!=STATE_B_HIGHLIGHT then
+		path={ cost=0 }
+		return
+	elseif not highlight[n] then
+		return
+	end
 
 	-- integer or nil
 	local i=find_on_path(n)
@@ -276,6 +444,9 @@ function update_path()
 	end
 end
 
+-->8
+-- draw methods
+
 function draw_highlight()
 	local sprite = 16*(((timer%30)\10)+1)
 	for x=0,map_w do
@@ -299,39 +470,67 @@ function draw_path()
 end
 
 function draw_actor(a)
-	spr(a.spr+2*a.frame,a.x*k_tilesize,a.y*k_tilesize,2,2)
+	local frame = timer%(a.frames*k_animspeed)\k_animspeed
+	spr(a.spr+2*frame,a.x*k_tilesize,a.y*k_tilesize,2,2)
+end
+
+function draw_units()
+	for a in all(units) do
+		draw_actor(a)
+	end
+end
+
+function draw_menu()
+	if (not active_menu.ref) return
+
+	local x,y,w=active_menu.x+cam_x*k_tilesize,active_menu.y+cam_y*k_tilesize,active_menu.w
+
+	rectfill(x+2,y+2,x+w-2,y+1+#active_menu.ref*8,13) -- lilac
+	rect(x,y,x+w,y+3+#active_menu.ref*8,7) -- white
+
+	for i=1,#active_menu.ref do
+		if menu_item==i then
+			rectfill(x+2,y-6+i*8,x+w-2,y+1+i*8,2) -- burgundy
+			print(active_menu.ref[i].text,x+3,y-5+i*8,10) -- yellow
+		else
+			print(active_menu.ref[i].text,x+3,y-4+i*8,7) -- white
+		end
+	end
 end
 
 -->8
 -- init, update, draw
 
 function _init()
-	init_pointer(3,3)
-	make_unit(7,5,slime_base)
-	make_unit(4,6,slime_base)
+	init_main_menu()
 end
 
 function _update()
-	control()
-	update_world()
-	for a in all(units) do
-		update_actor(a)
+	update_timer()
+	if game_state==STATE_G_MAIN_MENU then
+		control_menu()
+	elseif game_state==STATE_G_BATTLE then
+		control_battle()
+		update_units()
+		update_path()
+		update_camera()
 	end
-	update_actor(pointer)
-	update_path()
-	update_camera()
+	pop_game_state()
 end
 
 function _draw()
 	cls(3)
 	camera(cam_x*k_tilesize,cam_y*k_tilesize)
 	map()
-	draw_highlight()
-	draw_path()
-	for a in all(units) do
-		draw_actor(a)
+	if game_state==STATE_G_MAIN_MENU then
+		cls(5)
+	elseif game_state==STATE_G_BATTLE then
+		draw_highlight()
+		draw_path()
+		draw_units()
+		draw_actor(pointer)
 	end
-	draw_actor(pointer)
+	draw_menu()
 	popd_()
 end
 
@@ -408,3 +607,4 @@ __sfx__
 000100000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
 000600001f11013110001000010000100001000010000100001000010000100001000010000100001000010000100001000010000100001000010000100001000010000100001000010000100001000010000100
 000600001d05020050210002200000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+000800002113021100001000010000100001000010000100001000010000100001000010000100001000010000100001000010000100001000010000100001000010000100001000010000100001000010000100
