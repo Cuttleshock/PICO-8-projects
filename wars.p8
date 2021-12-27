@@ -15,10 +15,8 @@ STATE_G_MAIN_MENU=1
 STATE_G_BATTLE=2
 
 STATE_B_SELECT=101
-STATE_B_HIGHLIGHT=102
-STATE_B_ACTION=103
-STATE_B_MENU=104
-STATE_B_ANIM=105
+STATE_B_MENU=102
+STATE_B_ANIM=103
 
 -- units, menus
 slime_base = {
@@ -273,32 +271,7 @@ function move_pointer()
 end
 
 function control_battle()
-	-- pretty sure we don't need to separate STATE_B_HIGHLIGHT
 	if battle_state==STATE_B_SELECT then
-		if btnp(🅾️) then
-			sfx(2)
-			local unit = nil
-			for u in all(units) do
-				if u.x==pointer.x and u.y==pointer.y then
-					unit = u
-					break
-				end
-			end
-			if unit then
-				highlight_range(unit)
-				battle_state=STATE_B_HIGHLIGHT
-			else
-				active_menu.ref=battle_menu
-				active_menu.x=1
-				active_menu.y=1
-				active_menu.w=60
-				active_menu.on_exit=(function() battle_state=STATE_B_SELECT end)
-				battle_state=STATE_B_MENU
-			end
-		else
-			move_pointer()
-		end
-	elseif battle_state==STATE_B_HIGHLIGHT then
 		if btnp(🅾️) then
 			sfx(2)
 			-- crucial to check this first: else, can't take
@@ -309,8 +282,8 @@ function control_battle()
 				active_menu.y=1
 				active_menu.w=40
 				active_menu.x=126-active_menu.w
-				active_menu.on_exit=(function() battle_state=STATE_B_HIGHLIGHT end)
-				battle_state=STATE_B_ACTION
+				active_menu.on_exit=(function() battle_state=STATE_B_SELECT end)
+				battle_state=STATE_B_MENU
 			else
 				local unit = nil
 				for u in all(units) do
@@ -337,8 +310,6 @@ function control_battle()
 		else
 			move_pointer()
 		end
-	elseif battle_state==STATE_B_ACTION then
-		control_menu()
 	elseif battle_state==STATE_B_MENU then
 		control_menu() -- oh can these also be consolidated?
 	elseif battle_state==STATE_B_ANIM then
@@ -412,7 +383,7 @@ function update_path()
 	local x,y=pointer.x,pointer.y
 	local n=xy2n(x,y)
 
-	if battle_state!=STATE_B_HIGHLIGHT then
+	if not highlight.unit then
 		path={ cost=0 }
 		return
 	elseif not highlight[n] then
