@@ -266,8 +266,8 @@ function move_pointer()
 	end
 
 	-- keep from leaving map
-	if (pointer.x+dx<0 or pointer.x+dx>map_w) dx=0
-	if (pointer.y+dy<0 or pointer.y+dy>map_h) dy=0
+	if (pointer.x+dx<0 or pointer.x+dx>=map_w) dx=0
+	if (pointer.y+dy<0 or pointer.y+dy>=map_h) dy=0
 
 	if dx != 0 or dy != 0 then
 		pointer.x += dx
