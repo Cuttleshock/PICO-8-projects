@@ -25,6 +25,9 @@ slime_base = {
 	range=3,
 }
 
+-- functions need to be declared before using
+-- unless 'noop = function() end' syntax used.
+-- workarounds exist!
 function noop() end
 
 main_menu = {
@@ -41,7 +44,7 @@ battle_menu = {
 }
 
 action_menu = {
-	{ text='move', cb=noop },
+	{ text='move', cb=(function () return move_highlighted_unit() end) },
 	{ text='attack', cb=noop },
 }
 
@@ -121,6 +124,7 @@ function init_battle()
 	animate=(function() return true end)
 	anim_on_exit=(function() battle_state=STATE_B_SELECT end)
 	clear_menu()
+	units={}
 	init_pointer(3,3)
 	make_unit(7,5,slime_base)
 	make_unit(4,6,slime_base)
@@ -209,7 +213,6 @@ end
 
 function control_menu()
 	if btnp(🅾️) then
-		print(menu_item)
 		return active_menu.ref[menu_item].cb()
 	elseif btnp(❎) and active_menu.on_exit then
 		-- allow nil on_exit, indicating you can't back out
@@ -269,6 +272,25 @@ function move_pointer()
 		pointer.y += dy
 		sfx(1)
 	end
+end
+
+function move_highlighted_unit()
+	clear_menu()
+	move_unit(highlight.unit, pointer.x, pointer.y)
+	highlight={}
+end
+
+function move_unit(unit, x, y)
+	unit.x,unit.y=x,y
+	if (unit.sfx) sfx(unit.sfx)
+
+	unit.visible=false
+	battle_state=STATE_B_ANIM
+	animate=(function() return true end)
+	anim_on_exit=(function()
+		battle_state=STATE_B_SELECT
+		unit.visible=true
+	end)
 end
 
 function control_battle()
