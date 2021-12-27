@@ -70,7 +70,7 @@ battle_state=STATE_B_ANIM
 
 -- global state
 menu_item=1
-active_menu={ ref=nil }
+active_menu={}
 
 timer=0
 
@@ -112,7 +112,7 @@ function init_main_menu()
 	active_menu.x=40
 	active_menu.y=20
 	active_menu.w=48
-	active_menu.on_exit=noop
+	active_menu.on_exit=nil
 	menu_item=1
 end
 
@@ -211,7 +211,8 @@ function control_menu()
 	if btnp(🅾️) then
 		print(menu_item)
 		return active_menu.ref[menu_item].cb()
-	elseif btnp(❎) then
+	elseif btnp(❎) and active_menu.on_exit then
+		-- allow nil on_exit, indicating you can't back out
 		clear_menu()
 		return active_menu.on_exit()
 	end
