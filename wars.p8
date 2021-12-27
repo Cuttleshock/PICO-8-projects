@@ -126,6 +126,7 @@ function init_battle()
 	clear_menu()
 	units={}
 	init_pointer(3,3)
+	update_camera()
 	make_unit(7,5,slime_base)
 	make_unit(4,6,slime_base)
 	highlight={}
