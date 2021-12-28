@@ -14,9 +14,6 @@ k_timermax = 2*3*2*5*7*2*3
 STATE_G_MAIN_MENU=1
 STATE_G_BATTLE=2
 
-STATE_B_SELECT=101
-STATE_B_ANIM=103
-
 FACTION_RED=1001
 FACTION_BLUE=1002
 
@@ -74,11 +71,12 @@ end
 game_state=STATE_G_MAIN_MENU
 queued_game_state=nil
 queued_game_state_cb=noop
-battle_state=STATE_B_ANIM
 
 -- global state
 menu_item=1
 active_menu={}
+
+anim_coro_=nil
 
 timer=0
 
@@ -94,10 +92,6 @@ map_w=0
 map_h=0
 cam_x=0
 cam_y=0
-
--- todo: use coroutines!
-animate=noop
-anim_on_exit=noop
 
 -- note that this is misleadingly named:
 -- it's a replacement, not a real push.
@@ -127,9 +121,7 @@ function init_main_menu()
 end
 
 function init_battle()
-	battle_state=STATE_B_ANIM
-	animate=truthy_noop
-	anim_on_exit=(function() battle_state=STATE_B_SELECT end)
+	start_animation(truthy_noop, noop)
 	units={}
 	init_pointer(3,3)
 	update_camera()
@@ -166,6 +158,10 @@ function make_unit(x,y,faction,base)
 	}
 	add(units, unit)
 	return unit -- to allow further tweaks
+end
+
+function delete_unit(unit)
+	del(units, unit)
 end
 
 -- serialised data structure (no. bits):
@@ -225,9 +221,7 @@ end
 
 function end_turn()
 	active_faction=active_faction%#battle_factions + 1
-	battle_state=STATE_B_ANIM
-	animate=truthy_noop
-	anim_on_exit=(function() battle_state=STATE_B_SELECT end)
+	start_animation(truthy_noop, noop)
 end
 
 function close_menu()
@@ -263,6 +257,9 @@ function update_timer()
 	timer=(timer+1)%k_timermax
 end
 
+-- todo: doesn't quite feel right - try
+-- chording ⬆️ -> ⬆️➡️, and ➡️ -> ➡️⬆️.
+-- requires keeping track of 'lead' direction...
 function move_pointer()
 	local dx,dy=0,0
 	local updown = btn(⬆️) or btn(⬇️)
@@ -306,22 +303,25 @@ function move_highlighted_unit()
 end
 
 function move_unit(unit, x, y)
-	unit.x,unit.y=x,y
 	if (unit.sfx) sfx(unit.sfx)
 
 	unit.visible=false
-	battle_state=STATE_B_ANIM
-	animate=truthy_noop
-	anim_on_exit=(function()
-		battle_state=STATE_B_SELECT
-		unit.visible=true
-	end)
+
+	start_animation(
+		truthy_noop,
+		(function() unit.visible,unit.x,unit.y=true,x,y end),
+		unit,path,unit.x,unit.y
+	)
 end
 
 function control_battle()
-	if active_menu.ref then
+	if animation_in_progress() then
+		if btnp(🅾️) or btnp(❎) then
+			end_animation()
+		end
+	elseif active_menu.ref then
 		return control_menu()
-	elseif battle_state==STATE_B_SELECT then
+	else
 		if btnp(🅾️) then
 			sfx(2)
 			local unit = nil
@@ -363,10 +363,6 @@ function control_battle()
 			highlight={}
 		else
 			move_pointer()
-		end
-	elseif battle_state==STATE_B_ANIM then
-		if animate() or btnp(🅾️) or btnp(❎) then
-			anim_on_exit()
 		end
 	end
 end
@@ -527,10 +523,37 @@ function draw_menu()
 	end
 end
 
+function start_animation(cb, on_exit, ...)
+	anim_coro_ = cocreate(function(...)
+		local complete,args=false,{...}
+		while not complete and not yield() do
+			-- feels like there must be a one-liner
+			-- for the inner loop...
+			local ret = { cb(unpack(args)) }
+			complete,args=ret[1],{ select(2,unpack(ret)) }
+		end
+		on_exit()
+	end)
+	coresume(anim_coro_, ...)
+end
+
+function animation_in_progress()
+	return costatus(anim_coro_)!='dead'
+end
+
+function end_animation()
+	coresume(anim_coro_,true)
+end
+
+function animate()
+	coresume(anim_coro_,false)
+end
+
 -->8
 -- init, update, draw
 
 function _init()
+	anim_coro_=cocreate(noop)
 	init_main_menu()
 end
 
@@ -561,6 +584,7 @@ function _draw()
 		draw_faction()
 	end
 	draw_menu()
+	animate()
 	popd_()
 end
 
