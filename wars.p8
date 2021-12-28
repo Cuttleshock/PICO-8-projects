@@ -321,15 +321,27 @@ function control_battle()
 					break
 				end
 			end
-			if unit and unit!=highlight.unit then
+			if highlight[xy2n(pointer.x,pointer.y)] then
+				if highlight.unit.faction==battle_factions[active_faction] then
+					if not unit or unit==highlight.unit then
+						active_menu.ref=action_menu
+						active_menu.y=1
+						active_menu.w=40
+						active_menu.x=126-active_menu.w
+						active_menu.on_exit=(function() battle_state=STATE_B_SELECT end)
+						battle_state=STATE_B_MENU
+					elseif unit then
+						highlight_range(unit)
+					end
+				else
+					if unit then
+						highlight_range(unit)
+					else
+						highlight={}
+					end
+				end
+			elseif unit then
 				highlight_range(unit)
-			elseif highlight[xy2n(pointer.x,pointer.y)] then
-				active_menu.ref=action_menu
-				active_menu.y=1
-				active_menu.w=40
-				active_menu.x=126-active_menu.w
-				active_menu.on_exit=(function() battle_state=STATE_B_SELECT end)
-				battle_state=STATE_B_MENU
 			else
 				highlight={}
 				active_menu.ref=battle_menu
