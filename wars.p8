@@ -18,6 +18,14 @@ STATE_B_SELECT=101
 STATE_B_MENU=102
 STATE_B_ANIM=103
 
+FACTION_RED=1001
+FACTION_BLUE=1002
+
+faction_colours={
+	[FACTION_RED]=8,
+	[FACTION_BLUE]=1,
+}
+
 -- units, menus
 slime_base = {
 	spr=5,
@@ -25,9 +33,6 @@ slime_base = {
 	range=3,
 }
 
--- functions need to be declared before using
--- unless 'noop = function() end' syntax used.
--- workarounds exist!
 function noop() end
 
 main_menu = {
@@ -40,11 +45,11 @@ battle_menu = {
 	{ text='nope', cb=noop },
 	{ text='cool stats', cb=noop },
 	{ text='exit to menu', cb=(function () push_game_state(STATE_G_MAIN_MENU, init_main_menu) end) },
-	{ text='end turn', cb=noop },
+	{ text='end turn', cb=(function () end_turn() end) },
 }
 
 action_menu = {
-	{ text='move', cb=(function () return move_highlighted_unit() end) },
+	{ text='move', cb=(function () move_highlighted_unit() end) },
 	{ text='attack', cb=noop },
 }
 
@@ -82,6 +87,8 @@ units={}
 pointer={}
 highlight={}
 path={ cost=0 }
+battle_factions={}
+active_faction=0
 
 map_w=0
 map_h=0
@@ -127,8 +134,11 @@ function init_battle()
 	units={}
 	init_pointer(3,3)
 	update_camera()
-	make_unit(7,5,slime_base)
-	make_unit(4,6,slime_base)
+	battle_factions={ FACTION_RED, FACTION_BLUE }
+	active_faction=1
+	make_unit(7,5,FACTION_RED,slime_base)
+	make_unit(4,6,FACTION_RED,slime_base)
+	make_unit(5,4,FACTION_BLUE,slime_base)
 	highlight={}
 	path={ cost=0 }
 	map_w=16
@@ -142,10 +152,11 @@ function init_pointer(x,y)
 	pointer.frames = k_pointerframes
 end
 
-function make_unit(x,y,base)
+function make_unit(x,y,faction,base)
 	local unit = {
 		x=x,
 		y=y,
+		faction=faction,
 		dx=0,
 		dy=0,
 		spr=base.spr,
@@ -206,6 +217,10 @@ function highlight_range(u)
 		end
 		deli(search,1)
 	end
+end
+
+function end_turn()
+	active_faction=active_faction%#battle_factions + 1
 end
 
 function clear_menu()
@@ -462,13 +477,19 @@ end
 
 function draw_actor(a)
 	local frame = timer%(a.frames*k_animspeed)\k_animspeed
+	pal(8,faction_colours[a.faction])
 	spr(a.spr+2*frame,a.x*k_tilesize,a.y*k_tilesize,2,2)
+	pal()
 end
 
 function draw_units()
 	for a in all(units) do
 		draw_actor(a)
 	end
+end
+
+function draw_faction()
+	rectfill(cam_x*k_tilesize+112,cam_y*k_tilesize,cam_x*k_tilesize+128,cam_y*k_tilesize+6,faction_colours[battle_factions[active_faction]])
 end
 
 function draw_menu()
@@ -520,6 +541,7 @@ function _draw()
 		draw_path()
 		draw_units()
 		draw_actor(pointer)
+		draw_faction()
 	end
 	draw_menu()
 	popd_()
