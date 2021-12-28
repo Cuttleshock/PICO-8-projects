@@ -153,7 +153,6 @@ function make_unit(x,y,faction,base)
 		spr=base.spr,
 		frames=base.frames,
 		range=base.range,
-		visible=true,
 		unit=true,
 	}
 	add(units, unit)
@@ -305,12 +304,12 @@ end
 function move_unit(unit, x, y)
 	if (unit.sfx) sfx(unit.sfx)
 
-	unit.visible=false
+	unit.invisible=true
 
 	start_animation(
-		truthy_noop,
-		(function() unit.visible,unit.x,unit.y=true,x,y end),
-		unit,path,unit.x,unit.y
+		animate_unit_move_frame,
+		(function() unit.invisible,unit.x,unit.y=false,x,y end),
+		unit,path,0
 	)
 end
 
@@ -489,6 +488,8 @@ function draw_path()
 end
 
 function draw_actor(a)
+	if (a.invisible) return
+
 	local frame = timer%(a.frames*k_animspeed)\k_animspeed
 	pal(8,faction_colours[a.faction])
 	spr(a.spr+2*frame,a.x*k_tilesize,a.y*k_tilesize,2,2)
@@ -521,6 +522,24 @@ function draw_menu()
 			print(active_menu.ref[i].text,x+3,y-4+i*8,7) -- white
 		end
 	end
+end
+
+function animate_unit_move_frame(unit,path,frame)
+	local n=(frame\8)
+	local k=(frame%8)/8
+
+	-- path doesn't include unit's location
+	local x1,y1=unit.x,unit.y
+	if (n>0) x1,y1=n2xy(path[n])
+	local x2,y2=n2xy(path[n+1])
+	local x=k*x2+(1-k)*x1
+	local y=k*y2+(1-k)*y1
+
+	pal(8,faction_colours[unit.faction])
+	spr(unit.spr,x*k_tilesize,y*k_tilesize,2,2)
+	pal()
+
+	return (n>=#path),unit,path,frame+1
 end
 
 function start_animation(cb, on_exit, ...)
