@@ -148,12 +148,9 @@ function make_unit(x,y,faction,base)
 		x=x,
 		y=y,
 		faction=faction,
-		dx=0,
-		dy=0,
 		spr=base.spr,
 		frames=base.frames,
 		range=base.range,
-		unit=true,
 		moved=false,
 	}
 	add(units, unit)
@@ -371,20 +368,6 @@ function control_battle()
 	end
 end
 
-function update_actor(a)
-	if a.dx != 0 or a.dy != 0 then
-		a.x,a.y = a.x+a.dx,a.y+a.dy
-		a.dx,a.dy = 0,0
-		if (a.sfx) sfx(a.sfx)
-	end
-end
-
-function update_units()
-	for u in all(units) do
-		update_actor(u)
-	end
-end
-
 -- need to run this after moving pointer
 -- to prevent jumpiness
 function update_camera()
@@ -591,7 +574,6 @@ function _update()
 		control_menu()
 	elseif game_state==STATE_G_BATTLE then
 		control_battle()
-		update_units()
 		update_path()
 		update_camera()
 	end
