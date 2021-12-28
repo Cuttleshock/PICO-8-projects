@@ -15,7 +15,6 @@ STATE_G_MAIN_MENU=1
 STATE_G_BATTLE=2
 
 STATE_B_SELECT=101
-STATE_B_MENU=102
 STATE_B_ANIM=103
 
 FACTION_RED=1001
@@ -320,7 +319,9 @@ function move_unit(unit, x, y)
 end
 
 function control_battle()
-	if battle_state==STATE_B_SELECT then
+	if active_menu.ref then
+		return control_menu()
+	elseif battle_state==STATE_B_SELECT then
 		if btnp(🅾️) then
 			sfx(2)
 			local unit = nil
@@ -337,8 +338,7 @@ function control_battle()
 						active_menu.y=1
 						active_menu.w=40
 						active_menu.x=126-active_menu.w
-						active_menu.on_exit=(function() battle_state=STATE_B_SELECT end)
-						battle_state=STATE_B_MENU
+						active_menu.on_exit=noop
 					elseif unit then
 						highlight_range(unit)
 					end
@@ -357,17 +357,13 @@ function control_battle()
 				active_menu.x=1
 				active_menu.y=1
 				active_menu.w=60
-				active_menu.on_exit=(function() battle_state=STATE_B_SELECT end)
-				battle_state=STATE_B_MENU
+				active_menu.on_exit=noop
 			end
 		elseif btnp(❎) then
 			highlight={}
-			battle_state=STATE_B_SELECT
 		else
 			move_pointer()
 		end
-	elseif battle_state==STATE_B_MENU then
-		control_menu()
 	elseif battle_state==STATE_B_ANIM then
 		if animate() or btnp(🅾️) or btnp(❎) then
 			anim_on_exit()
