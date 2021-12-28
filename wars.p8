@@ -87,6 +87,7 @@ highlight={}
 path={ cost=0 }
 battle_factions={}
 active_faction=0
+battle_turn=0
 
 map_w=0
 map_h=0
@@ -126,6 +127,7 @@ function init_battle()
 	init_pointer(3,3)
 	update_camera()
 	battle_factions={ FACTION_RED, FACTION_BLUE }
+	battle_turn=1
 	active_faction=1
 	make_unit(7,5,FACTION_RED,slime_base)
 	make_unit(4,6,FACTION_RED,slime_base)
@@ -221,6 +223,7 @@ function end_turn()
 		u.moved=false
 	end
 	active_faction=active_faction%#battle_factions + 1
+	if (active_faction==1) battle_turn+=1
 	start_animation(truthy_noop, noop)
 end
 
@@ -495,7 +498,13 @@ function draw_units()
 end
 
 function draw_faction()
-	rectfill(cam_x*k_tilesize+112,cam_y*k_tilesize,cam_x*k_tilesize+128,cam_y*k_tilesize+6,faction_colours[battle_factions[active_faction]])
+	rectfill(cam_x*k_tilesize+103,cam_y*k_tilesize,cam_x*k_tilesize+128,cam_y*k_tilesize+6,faction_colours[battle_factions[active_faction]])
+	print(
+		'day '..battle_turn%100, -- cheat to avoid long days being cropped
+		cam_x*k_tilesize+104,
+		cam_y*k_tilesize+1,
+		7 -- white
+	)
 end
 
 function draw_menu()
