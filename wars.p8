@@ -199,6 +199,10 @@ function highlight_range(u)
 	highlight = { unit=u }
 	search = { xy2n(u.x,u.y) }
 	highlight[xy2n(u.x,u.y)] = xy2n(0xff,0xff,0,1) -- mvmt irrelevant?
+	local enemy_tiles={}
+	for u1 in all(units) do
+		if (u1.faction!=u.faction) enemy_tiles[xy2n(u1.x,u1.y)]=true
+	end
 	-- depth-first search
 	while search[1] do
 		local x,y = n2xy(search[1])
@@ -206,7 +210,8 @@ function highlight_range(u)
 		for tab in all({{x+1,y},{x,y+1},{x-1,y},{x,y-1}}) do
 			local x1,y1 = tab[1],tab[2]
 			local mvmt = get_mvmt(x1,y1)
-			local cost1 = cost + mvmt--SHOOT WAIT WHAT
+			local cost1 = cost + mvmt
+			if (enemy_tiles[xy2n(x1,y1)]) cost1+=0xff -- ugly but safe
 			local _,_,cost2 = n2xy(highlight[xy2n(x1,y1)])
 			if cost1 < cost2 and cost1 <= u.range then
 				highlight[xy2n(x1,y1)] = xy2n(x,y,cost1,mvmt)
