@@ -34,23 +34,24 @@ slime_base = {
 }
 
 function noop() end
+function truthy_noop() return true end
 
 main_menu = {
 	{ text='battle', cb=(function () push_game_state(STATE_G_BATTLE, init_battle) end) },
-	{ text='nothing', cb=noop },
-	{ text='also no', cb=noop },
+	{ text='nothing', cb=noop, stay=true },
+	{ text='also no', cb=noop, stay=true },
 }
 
 battle_menu = {
-	{ text='nope', cb=noop },
-	{ text='cool stats', cb=noop },
+	{ text='nope', cb=noop, stay=true },
+	{ text='cool stats', cb=noop, stay=true },
 	{ text='exit to menu', cb=(function () push_game_state(STATE_G_MAIN_MENU, init_main_menu) end) },
 	{ text='end turn', cb=(function () end_turn() end) },
 }
 
 action_menu = {
 	{ text='move', cb=(function () move_highlighted_unit() end) },
-	{ text='attack', cb=noop },
+	{ text='attack', cb=noop, stay=true },
 }
 
 debug = {_names={}}
@@ -128,9 +129,8 @@ end
 
 function init_battle()
 	battle_state=STATE_B_ANIM
-	animate=(function() return true end)
+	animate=truthy_noop
 	anim_on_exit=(function() battle_state=STATE_B_SELECT end)
-	clear_menu()
 	units={}
 	init_pointer(3,3)
 	update_camera()
@@ -226,19 +226,24 @@ end
 
 function end_turn()
 	active_faction=active_faction%#battle_factions + 1
+	battle_state=STATE_B_ANIM
+	animate=truthy_noop
+	anim_on_exit=(function() battle_state=STATE_B_SELECT end)
 end
 
-function clear_menu()
+function close_menu()
 	active_menu.ref=nil
 	menu_item=1
 end
 
 function control_menu()
 	if btnp(🅾️) then
-		return active_menu.ref[menu_item].cb()
+		active_menu.ref[menu_item].cb()
+		if (not active_menu.ref[menu_item].stay) close_menu()
+		return
 	elseif btnp(❎) and active_menu.on_exit then
 		-- allow nil on_exit, indicating you can't back out
-		clear_menu()
+		close_menu()
 		return active_menu.on_exit()
 	end
 
@@ -297,7 +302,6 @@ function move_pointer()
 end
 
 function move_highlighted_unit()
-	clear_menu()
 	move_unit(highlight.unit, pointer.x, pointer.y)
 	highlight={}
 end
@@ -308,7 +312,7 @@ function move_unit(unit, x, y)
 
 	unit.visible=false
 	battle_state=STATE_B_ANIM
-	animate=(function() return true end)
+	animate=truthy_noop
 	anim_on_exit=(function()
 		battle_state=STATE_B_SELECT
 		unit.visible=true
@@ -363,7 +367,7 @@ function control_battle()
 			move_pointer()
 		end
 	elseif battle_state==STATE_B_MENU then
-		control_menu() -- oh can these also be consolidated?
+		control_menu()
 	elseif battle_state==STATE_B_ANIM then
 		if animate() or btnp(🅾️) or btnp(❎) then
 			anim_on_exit()
