@@ -154,6 +154,7 @@ function make_unit(x,y,faction,base)
 		frames=base.frames,
 		range=base.range,
 		unit=true,
+		moved=false,
 	}
 	add(units, unit)
 	return unit -- to allow further tweaks
@@ -219,6 +220,9 @@ function highlight_range(u)
 end
 
 function end_turn()
+	for u in all(units) do
+		u.moved=false
+	end
 	active_faction=active_faction%#battle_factions + 1
 	start_animation(truthy_noop, noop)
 end
@@ -298,6 +302,7 @@ end
 
 function move_highlighted_unit()
 	move_unit(highlight.unit, pointer.x, pointer.y)
+	highlight.unit.moved=true
 	highlight={}
 end
 
@@ -325,7 +330,7 @@ function control_battle()
 			sfx(2)
 			local unit = nil
 			for u in all(units) do
-				if u.x==pointer.x and u.y==pointer.y then
+				if not u.moved and u.x==pointer.x and u.y==pointer.y then
 					unit = u
 					break
 				end
@@ -491,7 +496,11 @@ function draw_actor(a)
 	if (a.invisible) return
 
 	local frame = timer%(a.frames*k_animspeed)\k_animspeed
-	pal(8,faction_colours[a.faction])
+	if a.moved then
+		pal(8,5) -- grimy olive brown
+	elseif a.faction then
+		pal(8,faction_colours[a.faction])
+	end
 	spr(a.spr+2*frame,a.x*k_tilesize,a.y*k_tilesize,2,2)
 	pal()
 end
