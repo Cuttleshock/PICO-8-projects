@@ -64,6 +64,7 @@ main_menu = {
 	{ text='battle', cb=(function () push_game_state(STATE_G_BATTLE, init_battle) end) },
 	{ text='nothing', cb=noop, stay=true },
 	{ text='also no', cb=noop, stay=true },
+	sticky=true,
 }
 
 battle_menu = {
@@ -126,7 +127,6 @@ function init_main_menu()
 	active_menu.x=40
 	active_menu.y=20
 	active_menu.w=48
-	active_menu.on_exit=nil
 	menu_item=1
 end
 
@@ -246,10 +246,8 @@ function control_menu()
 		active_menu.ref[menu_item].cb()
 		if (not active_menu.ref[menu_item].stay) close_menu()
 		return
-	elseif btnp(❎) and active_menu.on_exit then
-		-- allow nil on_exit, indicating you can't back out
-		close_menu()
-		return active_menu.on_exit()
+	elseif btnp(❎) and not active_menu.ref.sticky then
+		return close_menu()
 	end
 
 	local dm = 0
@@ -351,7 +349,6 @@ function control_battle()
 						active_menu.y=1
 						active_menu.w=40
 						active_menu.x=126-active_menu.w
-						active_menu.on_exit=noop
 					elseif unit and not unit.moved then
 						highlight_range(unit)
 					end
@@ -370,7 +367,6 @@ function control_battle()
 				active_menu.x=1
 				active_menu.y=1
 				active_menu.w=60
-				active_menu.on_exit=noop
 			end
 		elseif btnp(❎) then
 			highlight={}
