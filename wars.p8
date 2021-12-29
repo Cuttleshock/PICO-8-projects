@@ -307,20 +307,23 @@ function move_pointer()
 	end
 end
 
-function move_highlighted_unit()
-	move_unit(highlight.unit, pointer.x, pointer.y)
+function move_highlighted_unit(cb)
+	move_unit(highlight.unit, pointer.x, pointer.y, cb)
 	highlight.unit.moved=true
 	highlight={}
 end
 
-function move_unit(unit, x, y)
+function move_unit(unit, x, y, cb)
 	if (unit.sfx) sfx(unit.sfx)
 
 	unit.invisible=true
 
 	start_animation(
 		animate_unit_move_frame,
-		(function() unit.invisible,unit.x,unit.y=false,x,y end),
+		(function()
+			unit.invisible,unit.x,unit.y=false,x,y
+			if (cb) cb()
+		end),
 		unit,path,0
 	)
 end
