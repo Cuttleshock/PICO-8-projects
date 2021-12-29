@@ -381,17 +381,18 @@ function damage(u1,u2)
 end
 
 function attack(attacker, defender)
-	damage(attacker, defender)
-	if defender.hp>0 then
-		damage(defender, attacker)
-	else
-		delete_unit(defender)
-	end
-	if (attacker.hp<=0) delete_unit(attacker)
-
 	start_animation(
 		animate_skirmish_frame,
-		(function() targets={ selected=1 } end),
+		(function()
+			targets={ selected=1 }
+			damage(attacker, defender)
+			if defender.hp>0 then
+				damage(defender, attacker)
+				if (attacker.hp<=0) delete_unit(attacker)
+			else
+				delete_unit(defender)
+			end
+		end),
 		attacker,defender,0
 	)
 end
