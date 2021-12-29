@@ -22,13 +22,31 @@ faction_colours={
 	[FACTION_BLUE]=1,
 }
 
--- units, menus
+UNIT_SLIME=2001
+
+-- sprite flags for each terrain
+TERRAIN_PLAINS=0b1
+TERRAIN_MOUNTAIN=0b10
+
+-- todo: replace these with nifty, nasty bitfields
+terrain_cost={
+	[TERRAIN_PLAINS]={
+		[UNIT_SLIME]=1,
+	},
+	[TERRAIN_MOUNTAIN]={
+		[UNIT_SLIME]=2,
+	},
+}
+
+-- units
 slime_base = {
 	spr=5,
 	frames=2,
 	range=3,
+	movetype=UNIT_SLIME,
 }
 
+-- menus
 function noop() end
 function truthy_noop() return true end
 
@@ -153,6 +171,7 @@ function make_unit(x,y,faction,base)
 		spr=base.spr,
 		frames=base.frames,
 		range=base.range,
+		movetype=base.movetype,
 		moved=false,
 	}
 	add(units, unit)
@@ -178,9 +197,9 @@ function n2xy(n)
 	return (n >> 8) & 0xff, n & 0xff, (n & 0x0.f) << 4
 end
 
-function get_mvmt(x,y)
+function get_mvmt(unit,x,y)
 	if 0<=x and x<=map_w and 0<=y and y<=map_h then
-		return 1 -- movement cost here!
+		return terrain_cost[fget(mget(x*2,y*2))][unit.movetype] or 0xff
 	else
 		return 0xff -- "too big"
 	end
@@ -202,7 +221,7 @@ function highlight_range(u)
 		local _,_,cost = n2xy(highlight[search[1]])
 		for tab in all({{x+1,y},{x,y+1},{x-1,y},{x,y-1}}) do
 			local x1,y1 = tab[1],tab[2]
-			local mvmt = get_mvmt(x1,y1)
+			local mvmt = get_mvmt(u,x1,y1)
 			local cost1 = cost + mvmt
 			if (enemy_tiles[xy2n(x1,y1)]) cost1+=0xff -- ugly but safe
 			local _,_,cost2 = n2xy(highlight[xy2n(x1,y1)])
@@ -402,7 +421,7 @@ function can_append(loc)
 	-- must be adjacent to end of path
 	if (abs(xloc-xend)+abs(yloc-yend)!=1) return false
 	-- total cost must be within mvmt
-	return path.cost+get_mvmt(xloc,yloc)<=highlight.unit.range
+	return path.cost+get_mvmt(highlight.unit,xloc,yloc)<=highlight.unit.range
 end
 
 function find_on_path(loc)
@@ -432,19 +451,19 @@ function update_path()
 	if i then
 		for j=i+1,#path do
 			local xp,yp = n2xy(path[j])
-			path.cost -= get_mvmt(xp,yp)
+			path.cost -= get_mvmt(highlight.unit,xp,yp)
 			path[j] = nil
 		end
 	elseif can_append(n) then
 		add(path, n)
-		path.cost += get_mvmt(x,y)
+		path.cost += get_mvmt(highlight.unit,x,y)
 	else
 		path = { cost=0 }
 		local curr,next=n,highlight[n]
 		local xn=n2xy(next)
 		while xn!=0xff do
 			add(path, curr, 1)
-			path.cost+=get_mvmt(x,y)
+			path.cost+=get_mvmt(highlight.unit,x,y)
 			x,y=n2xy(next)
 			curr,next=next,highlight[xy2n(x,y)]
 			xn=n2xy(next)
@@ -639,6 +658,9 @@ c000c000000006666666600000000000000000000000000000000000000000000000000000000000
 0c000c00000666666666600000000bb000b000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
 c000c000006666666666660000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
 000c000c066666666666666000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+__gff__
+0100000000000000000000000000000000000000000000000000000000000000000202010100000000000000000000000002020101000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
 __map__
 2324000000000000232400000000000000000000000000000000212221222324000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
 3334000000000000333400000000000000000000000000000000313231323334000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
