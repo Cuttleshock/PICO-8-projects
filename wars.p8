@@ -330,7 +330,7 @@ function control_battle()
 			sfx(2)
 			local unit = nil
 			for u in all(units) do
-				if not u.moved and u.x==pointer.x and u.y==pointer.y then
+				if u.x==pointer.x and u.y==pointer.y then
 					unit = u
 					break
 				end
@@ -343,17 +343,17 @@ function control_battle()
 						active_menu.w=40
 						active_menu.x=126-active_menu.w
 						active_menu.on_exit=noop
-					elseif unit then
+					elseif unit and not unit.moved then
 						highlight_range(unit)
 					end
 				else
-					if unit then
+					if unit and not unit.moved then
 						highlight_range(unit)
 					else
 						highlight={}
 					end
 				end
-			elseif unit then
+			elseif unit and not unit.moved then
 				highlight_range(unit)
 			else
 				highlight={}
