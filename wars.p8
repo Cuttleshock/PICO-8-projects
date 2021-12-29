@@ -5,6 +5,7 @@ __lua__
 
 k_animspeed = 20
 k_tilesize = 16
+k_max_unit_hp = 100
 -- divides 1~10, 12, 14, 15:
 k_timermax = 2*3*2*5*7*2*3
 
@@ -138,7 +139,8 @@ function init_battle()
 	battle_turn=1
 	active_faction=1
 	make_unit(7,5,FACTION_RED,slime_base)
-	make_unit(4,6,FACTION_RED,slime_base)
+	local hurt_slime=make_unit(4,6,FACTION_RED,slime_base)
+	hurt_slime.hp=65
 	make_unit(5,4,FACTION_BLUE,slime_base)
 	highlight={}
 	path={ cost=0 }
@@ -157,6 +159,7 @@ function make_unit(x,y,faction,base)
 	local unit = {
 		x=x,
 		y=y,
+		hp=k_max_unit_hp,
 		faction=faction,
 		base=base,
 		moved=false,
@@ -495,6 +498,15 @@ function draw_actor(a)
 	end
 	spr(a.spr+2*frame,a.x*k_tilesize,a.y*k_tilesize,2,2)
 	pal()
+
+	if a.hp then
+		local display_hp=ceil(a.hp*10/k_max_unit_hp)
+		if display_hp<10 then
+			local x1,y1=(a.x+1)*k_tilesize-1,(a.y+1)*k_tilesize-1
+			rectfill(x1-4,y1-6,x1,y1,0) -- black
+			print(display_hp,x1-3,y1-5,7) -- white
+		end
+	end
 end
 
 function draw_units()
