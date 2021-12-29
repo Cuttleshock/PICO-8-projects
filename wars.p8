@@ -96,8 +96,7 @@ end
 
 -- state control
 game_state=STATE_G_MAIN_MENU
-queued_game_state=nil
-queued_game_state_cb=noop
+state_coro_=nil
 
 -- global state
 menu_item=1
@@ -120,24 +119,6 @@ map_w=0
 map_h=0
 cam_x=0
 cam_y=0
-
--- note that this is misleadingly named:
--- it's a replacement, not a real push.
--- todo: use coroutines?
-function push_game_state(state, cb)
-	queued_game_state=state
-	queued_game_state_cb=cb or noop
-end
-
-function pop_game_state()
-	if (not queued_game_state) return
-
-	game_state=queued_game_state
-	queued_game_state_cb()
-
-	queued_game_state=nil
-	queued_game_state_cb=noop
-end
 
 function init_main_menu()
 	active_menu.ref=main_menu
@@ -568,6 +549,28 @@ function animate_unit_move_frame(unit,path,frame)
 	return (n>=#path),unit,path,frame+1
 end
 
+function init_state_coro_()
+	state_coro_ = cocreate(function(state,cb)
+		while true do
+			local state_,cb_=yield()
+			if state then
+				game_state=state
+				cb()
+			end
+			state,cb=state_,cb_
+		end
+	end)
+	coresume(state_coro_)
+end
+
+function push_game_state(state, cb)
+	coresume(state_coro_, state, cb)
+end
+
+function pop_game_state()
+	coresume(state_coro_)
+end
+
 function start_animation(cb, on_exit, ...)
 	anim_coro_ = cocreate(function(...)
 		local complete,args=false,{...}
@@ -598,6 +601,7 @@ end
 -- init, update, draw
 
 function _init()
+	init_state_coro_()
 	anim_coro_=cocreate(noop)
 	init_main_menu()
 end
