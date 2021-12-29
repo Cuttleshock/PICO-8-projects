@@ -164,19 +164,18 @@ function delete_unit(unit)
 end
 
 -- serialised data structure (no. bits):
--- x y cost mvmt unused
--- 8 8 4    4    8
+-- x y cost unused
+-- 8 8 4    12
 -- needed to write highlight
-function xy2n(x,y,cost,mvmt)
+function xy2n(x,y,cost)
 	cost = cost or 0
-	mvmt = mvmt or 0
-	return ((x & 0xff) << 8) | (y & 0xff) | ((cost & 0xf) >> 4) | ((mvmt & 0xf) >> 8)
+	return ((x & 0xff) << 8) | (y & 0xff) | ((cost & 0xf) >> 4)
 end
 
 -- needed to iterate through highlight and read paths
 function n2xy(n)
 	n = n or 0xffff.f
-	return (n >> 8) & 0xff, n & 0xff, (n & 0x0.f) << 4, (n & 0x0.0f) << 8
+	return (n >> 8) & 0xff, n & 0xff, (n & 0x0.f) << 4
 end
 
 function get_mvmt(x,y)
@@ -192,7 +191,7 @@ function highlight_range(u)
 	path={ cost=0 }
 	highlight = { unit=u }
 	search = { xy2n(u.x,u.y) }
-	highlight[xy2n(u.x,u.y)] = xy2n(0xff,0xff,0,1) -- mvmt irrelevant?
+	highlight[xy2n(u.x,u.y)] = xy2n(0xff,0xff,0)
 	local enemy_tiles={}
 	for u1 in all(units) do
 		if (u1.faction!=u.faction) enemy_tiles[xy2n(u1.x,u1.y)]=true
@@ -208,7 +207,7 @@ function highlight_range(u)
 			if (enemy_tiles[xy2n(x1,y1)]) cost1+=0xff -- ugly but safe
 			local _,_,cost2 = n2xy(highlight[xy2n(x1,y1)])
 			if cost1 < cost2 and cost1 <= u.range then
-				highlight[xy2n(x1,y1)] = xy2n(x,y,cost1,mvmt)
+				highlight[xy2n(x1,y1)] = xy2n(x,y,cost1)
 				if cost1 < u.range then -- strict <
 					add(search, xy2n(x1,y1))
 				end
