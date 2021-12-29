@@ -21,7 +21,7 @@ faction_colours={
 	[FACTION_BLUE]=1,
 }
 
-UNIT_SLIME=2001
+MOVE_SLIME=2001
 
 -- sprite flags for each terrain
 TERRAIN_PLAINS=0b1
@@ -30,10 +30,10 @@ TERRAIN_MOUNTAIN=0b10
 -- todo: replace these with nifty, nasty bitfields
 terrain_cost={
 	[TERRAIN_PLAINS]={
-		[UNIT_SLIME]=1,
+		[MOVE_SLIME]=1,
 	},
 	[TERRAIN_MOUNTAIN]={
-		[UNIT_SLIME]=2,
+		[MOVE_SLIME]=2,
 	},
 }
 
@@ -53,7 +53,7 @@ slime_base = {
 	spr=5,
 	frames=2,
 	range=3,
-	movetype=UNIT_SLIME,
+	movetype=MOVE_SLIME,
 }
 
 -- menus
