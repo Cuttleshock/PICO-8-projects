@@ -22,6 +22,11 @@ faction_colours={
 	[FACTION_BLUE]=1,
 }
 
+faction_names={
+	[FACTION_RED]='red',
+	[FACTION_BLUE]='blue',
+}
+
 MOVE_SLIME=2001
 
 ATK_SLIME=3001
@@ -183,6 +188,7 @@ end
 
 function delete_unit(unit)
 	del(units, unit)
+	check_faction_defeated(unit.faction)
 end
 
 -- serialised data structure (no. bits):
@@ -239,13 +245,13 @@ function highlight_range(u)
 	end
 end
 
-function end_turn()
+function end_turn(cb)
 	for u in all(units) do
 		u.moved=false
 	end
 	active_faction=active_faction%#battle_factions + 1
 	if (active_faction==1) battle_turn+=1
-	start_animation(truthy_noop, noop)
+	start_animation(truthy_noop, cb or noop)
 end
 
 function close_menu()
@@ -536,6 +542,54 @@ function update_path()
 	end
 end
 
+-- currently only supports defeat by rout
+function check_faction_defeated(faction)
+	for u in all(units) do
+		if (u.faction==faction) return
+	end
+	-- all units are gone
+	clear_faction(faction)
+end
+
+function clear_faction(faction)
+	-- unnecessary if all units are gone, but this
+	-- future-proofs for alternative win conditions
+	for u in all(units) do
+		if (u.faction==faction) del(units,u)
+	end
+
+	local n
+	for i,f in pairs(battle_factions) do
+		if f==faction then
+			n=i
+			break
+		end
+	end
+
+	if #battle_factions==2 then
+		-- battle is over, declare victory for not-n
+		end_battle(battle_factions[3-n])
+	elseif active_faction<n then
+		deli(battle_factions,n)
+	elseif active_faction==n then
+		end_turn(function ()
+			deli(battle_factions,n)
+			active_faction-=1
+		end)
+	else
+		deli(battle_factions,n)
+		active_faction-=1
+	end
+end
+
+function end_battle(faction)
+	start_animation(
+		animate_battle_end_frame,
+		(function() push_game_state(STATE_G_MAIN_MENU, init_main_menu) end),
+		faction, 0
+	)
+end
+
 -->8
 -- draw methods
 
@@ -644,6 +698,14 @@ function animate_unit_move_frame(unit,path,frame)
 	pal()
 
 	return (n>=#path),unit,path,frame+1
+end
+
+function animate_battle_end_frame(faction, frame)
+	local x0,y0=cam_x*k_tilesize+30,cam_y*k_tilesize+24
+	rectfill(x0,y0,x0+68,y0+19,faction_colours[faction])
+	print('\^w\^t'..faction_names[faction]..' wins',x0+2,y0+5,15) -- cream
+
+	return false,faction,frame+1
 end
 
 function init_state_coro_()
