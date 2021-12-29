@@ -3,9 +3,7 @@ version 32
 __lua__
 -- magic numbers
 
-k_pointerframes = 2
 k_animspeed = 20
-k_pointerspr = 1
 k_tilesize = 16
 -- divides 1~10, 12, 14, 15:
 k_timermax = 2*3*2*5*7*2*3
@@ -39,6 +37,17 @@ terrain_cost={
 }
 
 -- units
+actor_metatable = {
+	__index=(function(t,k)
+		return rawget(t,k) or rawget(t,'base')[k]
+	end),
+}
+
+pointer_base = {
+	spr=1,
+	frames=2,
+}
+
 slime_base = {
 	spr=5,
 	frames=2,
@@ -159,8 +168,8 @@ end
 function init_pointer(x,y)
 	pointer.x = x
 	pointer.y = y
-	pointer.spr = k_pointerspr
-	pointer.frames = k_pointerframes
+	pointer.base=pointer_base
+	setmetatable(pointer, actor_metatable)
 end
 
 function make_unit(x,y,faction,base)
@@ -168,12 +177,10 @@ function make_unit(x,y,faction,base)
 		x=x,
 		y=y,
 		faction=faction,
-		spr=base.spr,
-		frames=base.frames,
-		range=base.range,
-		movetype=base.movetype,
+		base=base,
 		moved=false,
 	}
+	setmetatable(unit, actor_metatable)
 	add(units, unit)
 	return unit -- to allow further tweaks
 end
