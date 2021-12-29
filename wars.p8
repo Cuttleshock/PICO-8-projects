@@ -6,6 +6,7 @@ __lua__
 k_animspeed = 20
 k_tilesize = 16
 k_max_unit_hp = 100
+k_damage_scale = 50
 -- divides 1~10, 12, 14, 15:
 k_timermax = 2*3*2*5*7*2*3
 
@@ -23,6 +24,10 @@ faction_colours={
 
 MOVE_SLIME=2001
 
+ATK_SLIME=3001
+
+DEF_SLIME=4001
+
 -- sprite flags for each terrain
 TERRAIN_PLAINS=0b1
 TERRAIN_MOUNTAIN=0b10
@@ -34,6 +39,12 @@ terrain_cost={
 	},
 	[TERRAIN_MOUNTAIN]={
 		[MOVE_SLIME]=2,
+	},
+}
+
+damage_table={
+	[ATK_SLIME]={
+		[DEF_SLIME]=1,
 	},
 }
 
@@ -54,6 +65,8 @@ slime_base = {
 	frames=2,
 	range=3,
 	movetype=MOVE_SLIME,
+	atk=ATK_SLIME,
+	def=DEF_SLIME,
 }
 
 -- menus
@@ -328,6 +341,30 @@ function move_unit(unit, x, y, cb)
 	)
 end
 
+function damage(u1,u2)
+	local dmg = k_damage_scale
+	dmg *= (1+rnd(0.1))
+	dmg *= ceil(u1.hp*5/k_max_unit_hp)/5
+	dmg *= damage_table[u1.atk][u2.def]
+	u2.hp -= flr(dmg)
+end
+
+function attack(attacker, defender)
+	damage(attacker, defender)
+	if defender.hp>0 then
+		damage(defender, attacker)
+	else
+		delete_unit(defender)
+	end
+	if (attacker.hp<=0) delete_unit(attacker)
+
+	start_animation(
+		animate_skirmish_frame,
+		(function() targets={ selected=1 } end),
+		attacker,defender,0
+	)
+end
+
 function control_battle()
 	if animation_in_progress() then
 		if btnp(🅾️) or btnp(❎) then
@@ -540,6 +577,10 @@ function draw_menu()
 			print(active_menu.ref[i].text,x+3,y-4+i*8,7) -- white
 		end
 	end
+end
+
+function animate_skirmish_frame(attacker,defender,frame)
+	return true -- todo
 end
 
 function animate_unit_move_frame(unit,path,frame)
