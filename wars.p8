@@ -87,10 +87,8 @@ battle_menu = {
 	{ text='end turn', cb=(function () end_turn() end) },
 }
 
-action_menu = {
-	{ text='move', cb=(function () move_highlighted_unit() end) },
-	{ text='attack', cb=noop, stay=true },
-}
+menuitem_move = { text='move', cb=(function () move_highlighted_unit() end) }
+menuitem_attack = { text='attack', cb=(function() target_highlighted_unit() end) }
 
 debug = {_names={}}
 function d_(str)
@@ -126,6 +124,7 @@ units={}
 pointer={}
 highlight={}
 path={ cost=0 }
+targets={ selected=1 }
 battle_factions={}
 active_faction=0
 battle_turn=0
@@ -341,6 +340,38 @@ function move_unit(unit, x, y, cb)
 	)
 end
 
+function list_targets_from(unit,x,y)
+	local locations={
+		[xy2n(x+1,y)]=true,
+		[xy2n(x,y+1)]=true,
+		[xy2n(x-1,y)]=true,
+		[xy2n(x,y-1)]=true,
+	}
+	local ret={ selected=1 }
+	for u in all(units) do
+		if (u.faction!=unit.faction and locations[xy2n(u.x,u.y)]) add(ret,u)
+	end
+	return ret
+end
+
+function target_highlighted_unit()
+	targets=list_targets_from(highlight.unit,pointer.x,pointer.y)
+end
+
+function control_targets()
+	if btnp(➡️) or btnp(⬇️) then
+		targets.selected=(targets.selected%#targets)+1
+	elseif btnp(⬅️) or btnp(⬆️) then
+		targets.selected-=1
+		if (targets.selected==0) targets.selected=#targets
+	elseif btnp(🅾️) then
+		local unit = highlight.unit -- need reference after highlight cleared
+		move_highlighted_unit(function() attack(unit, targets[targets.selected]) end)
+	elseif btnp(❎) then
+		targets={ selected=1 }
+	end
+end
+
 function damage(u1,u2)
 	local dmg = k_damage_scale
 	dmg *= (1+rnd(0.1))
@@ -372,6 +403,8 @@ function control_battle()
 		end
 	elseif active_menu.ref then
 		return control_menu()
+	elseif #targets>0 then
+		return control_targets()
 	else
 		if btnp(🅾️) then
 			sfx(2)
@@ -385,7 +418,11 @@ function control_battle()
 			if highlight[xy2n(pointer.x,pointer.y)] then
 				if highlight.unit.faction==battle_factions[active_faction] then
 					if not unit or unit==highlight.unit then
-						active_menu.ref=action_menu
+						if #list_targets_from(highlight.unit,pointer.x,pointer.y)>0 then
+							active_menu.ref={ menuitem_attack, menuitem_move }
+						else
+							active_menu.ref={ menuitem_move }
+						end
 						active_menu.y=1
 						active_menu.w=40
 						active_menu.x=126-active_menu.w
