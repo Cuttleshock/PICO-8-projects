@@ -588,6 +588,13 @@ function draw_units()
 	end
 end
 
+function draw_targets()
+	for i=1,#targets do
+		local x0,y0=targets[i].x*k_tilesize+6,targets[i].y*k_tilesize+6
+		rectfill(x0,y0,x0+3,y0+3,(i==targets.selected and 4 or 15)) -- brown or peach
+	end
+end
+
 function draw_faction()
 	rectfill(cam_x*k_tilesize+103,cam_y*k_tilesize,cam_x*k_tilesize+128,cam_y*k_tilesize+6,faction_colours[battle_factions[active_faction]])
 	print(
@@ -717,7 +724,11 @@ function _draw()
 		draw_highlight()
 		draw_path()
 		draw_units()
-		draw_actor(pointer)
+		if #targets>0 then
+			draw_targets()
+		else
+			draw_actor(pointer)
+		end
 		draw_faction()
 	end
 	draw_menu()
