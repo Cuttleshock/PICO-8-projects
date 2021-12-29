@@ -526,8 +526,8 @@ function draw_menu()
 end
 
 function animate_unit_move_frame(unit,path,frame)
-	local n=(frame\8)
-	local k=(frame%8)/8
+	local n=(frame\4)
+	local k=(frame%4)/4
 
 	-- path doesn't include unit's location
 	local x1,y1=unit.x,unit.y
