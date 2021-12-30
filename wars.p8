@@ -7,6 +7,10 @@ k_animspeed = 20
 k_tilesize = 16
 k_max_unit_hp = 100
 k_damage_scale = 50
+k_city_heal = 20
+k_city_income = 10
+k_max_funds = 9990
+k_capture_max = 20
 -- divides 1~10, 12, 14, 15:
 k_timermax = 2*3*2*5*7*2*3
 
@@ -448,6 +452,24 @@ function attack(attacker, defender)
 	)
 end
 
+function capture(unit)
+	if (not unit.capture_count) unit.capture_count=k_capture_max
+	unit.capture_count-=ceil(unit.hp*10/k_max_unit_hp)
+	local cb=noop
+
+	if unit.capture_count<=0 then
+		properties[xy2n(unit.x,unit.y)]=unit.faction
+		unit.capture_count=nil
+		-- todo: check if property is HQ, set cb=clear_faction() if so
+	end
+
+	start_animation(
+		animate_property_capture_frame,
+		cb,
+		unit,0
+	)
+end
+
 function control_battle()
 	if animation_in_progress() then
 		if btnp(🅾️) or btnp(❎) then
@@ -742,6 +764,10 @@ function draw_menu()
 end
 
 function animate_skirmish_frame(attacker,defender,frame)
+	return true -- todo
+end
+
+function animate_property_capture_frame(unit,frame)
 	return true -- todo
 end
 
