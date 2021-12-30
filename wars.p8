@@ -67,6 +67,10 @@ terrain_def={
 	[TERRAIN_CITY]=2,
 }
 
+capturable={
+	[TERRAIN_CITY]=true,
+}
+
 damage_table={
 	[ATK_SLIME]={
 		[DEF_SLIME]=1,
@@ -89,6 +93,7 @@ slime_base = {
 	spr=5,
 	frames=2,
 	range=3,
+	captures=true, -- todo - no it doesn't!
 	movetype=MOVE_SLIME,
 	atk=ATK_SLIME,
 	def=DEF_SLIME,
@@ -114,6 +119,7 @@ battle_menu = {
 
 menuitem_move = { text='move', cb=(function () move_highlighted_unit() end) }
 menuitem_attack = { text='attack', cb=(function() target_highlighted_unit() end) }
+menuitem_capture = { text='capture', cb=(function() capture_highlighted_unit() end) }
 
 debug = {_names={}}
 function d_(str)
@@ -426,6 +432,11 @@ function control_targets()
 	end
 end
 
+function capture_highlighted_unit()
+	local unit=highlight.unit -- keep reference after highlight cleared
+	move_highlighted_unit(function() capture(unit) end)
+end
+
 function damage(u1,u2)
 	local dmg = k_damage_scale
 	dmg *= (1+rnd(0.1))
@@ -492,10 +503,12 @@ function control_battle()
 			if highlight[xy2n(pointer.x,pointer.y)] then
 				if highlight.unit.faction==battle_factions[active_faction] then
 					if not unit or unit==highlight.unit then
+						active_menu.ref={ menuitem_move }
 						if #list_targets_from(highlight.unit,pointer.x,pointer.y)>0 then
-							active_menu.ref={ menuitem_attack, menuitem_move }
-						else
-							active_menu.ref={ menuitem_move }
+							add(active_menu.ref, menuitem_attack)
+						end
+						if highlight.unit.captures and ((properties[xy2n(pointer.x,pointer.y)] and properties[xy2n(pointer.x,pointer.y)]!=highlight.unit.faction) or (not properties[xy2n(pointer.x,pointer.y)] and capturable[fget(mget(pointer.x*2,pointer.y*2))])) then
+							add(active_menu.ref, menuitem_capture)
 						end
 						active_menu.y=1
 						active_menu.w=40
