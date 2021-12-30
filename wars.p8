@@ -785,7 +785,7 @@ function start_animation(cb, on_exit, ...)
 		end
 		on_exit()
 	end)
-	coresume(anim_coro_, ...)
+	assert(coresume(anim_coro_, ...))
 end
 
 function animation_in_progress()
@@ -793,11 +793,11 @@ function animation_in_progress()
 end
 
 function end_animation()
-	coresume(anim_coro_,true)
+	if (animation_in_progress()) assert(coresume(anim_coro_,true))
 end
 
 function animate()
-	coresume(anim_coro_,false)
+	if (animation_in_progress()) assert(coresume(anim_coro_,false))
 end
 
 -->8
