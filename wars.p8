@@ -724,15 +724,14 @@ end
 
 function draw_highlight()
 	local sprite = 16*(((timer%30)\10)+1)
-	for x=0,map_w do
-		for y=0,map_h do
-			if highlight[xy2n(x,y)] then
-				-- draw 2*2 on every metatile
-				spr(sprite,x*k_tilesize,y*k_tilesize)
-				spr(sprite,(x+0.5)*k_tilesize,y*k_tilesize)
-				spr(sprite,x*k_tilesize,(y+0.5)*k_tilesize)
-				spr(sprite,(x+0.5)*k_tilesize,(y+0.5)*k_tilesize)
-			end
+	local x,y
+	for n,_ in pairs(highlight) do
+		if type(n)!='string' then
+			x,y=n2xy(n)
+			spr(sprite,x*k_tilesize,y*k_tilesize)
+			spr(sprite,(x+0.5)*k_tilesize,y*k_tilesize)
+			spr(sprite,x*k_tilesize,(y+0.5)*k_tilesize)
+			spr(sprite,(x+0.5)*k_tilesize,(y+0.5)*k_tilesize)
 		end
 	end
 end
