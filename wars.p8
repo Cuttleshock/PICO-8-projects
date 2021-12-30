@@ -53,6 +53,11 @@ terrain_cost={
 	},
 }
 
+terrain_def={
+	[TERRAIN_PLAINS]=1,
+	[TERRAIN_MOUNTAIN]=3,
+}
+
 damage_table={
 	[ATK_SLIME]={
 		[DEF_SLIME]=1,
@@ -224,6 +229,10 @@ function get_mvmt(unit,x,y)
 	end
 end
 
+function get_defence(x,y)
+	return terrain_def[fget(mget(x*2,y*2))] or 0
+end
+
 function highlight_range(u)
 	-- clear, then init w/ starting location
 	path={ cost=0 }
@@ -393,6 +402,7 @@ function damage(u1,u2)
 	dmg *= (1+rnd(0.1))
 	dmg *= ceil(u1.hp*5/k_max_unit_hp)/5
 	dmg *= damage_table[u1.atk][u2.def]
+	dmg *= (1-get_defence(u2.x,u2.y)/10)
 	u2.hp -= flr(dmg)
 end
 
