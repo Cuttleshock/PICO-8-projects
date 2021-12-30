@@ -158,7 +158,7 @@ function init_battle()
 	units={}
 	init_pointer(3,3)
 	update_camera()
-	battle_factions={ FACTION_RED, FACTION_BLUE }
+	battle_factions={ FACTION_RED, FACTION_BLUE, FACTION_GREEN, FACTION_YELLOW }
 	battle_turn=1
 	active_faction=1
 	make_unit(7,5,FACTION_RED,slime_base)
