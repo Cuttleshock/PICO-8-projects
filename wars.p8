@@ -173,14 +173,14 @@ function init_battle()
 	init_pointer(3,3)
 	update_camera()
 	battle_factions={ FACTION_RED, FACTION_BLUE, FACTION_GREEN, FACTION_YELLOW }
-	battle_turn=1
-	active_faction=1
 	faction_funds={
 		[FACTION_RED]=0,
 		[FACTION_BLUE]=0,
 		[FACTION_GREEN]=0,
 		[FACTION_YELLOW]=0,
 	}
+	battle_turn=0
+	active_faction=0
 	make_unit(7,5,FACTION_RED,slime_base)
 	make_unit(4,6,FACTION_RED,slime_base)
 	make_unit(5,4,FACTION_BLUE,slime_base)
@@ -193,6 +193,7 @@ function init_battle()
 	path={ cost=0 }
 	map_w=16
 	map_h=16
+	end_turn()
 end
 
 function init_pointer(x,y)
@@ -280,6 +281,8 @@ function highlight_range(u)
 end
 
 function end_turn(cb)
+	active_faction=active_faction%#battle_factions + 1
+	if (active_faction==1) battle_turn+=1
 	for u in all(units) do
 		u.moved=false
 	for n,f in pairs(properties) do
@@ -288,8 +291,6 @@ function end_turn(cb)
 			faction_funds[battle_factions[active_faction]]=min(newfunds,k_max_funds)
 		end
 	end
-	active_faction=active_faction%#battle_factions + 1
-	if (active_faction==1) battle_turn+=1
 	start_animation(truthy_noop, cb or noop)
 end
 
