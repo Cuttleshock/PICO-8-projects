@@ -55,6 +55,10 @@ TERRAIN_HQ=0b100
 -- sprite ref for city, to allow replacing a captured HQ
 SPRITE_CITY=37
 
+-- sprite ref for factory, to allow building
+-- w/o needing a separate bitmask from city
+SPRITE_FACTORY=41
+
 -- todo: replace these with nifty, nasty bitfields
 terrain_cost={
 	[TERRAIN_PLAINS]={
@@ -571,7 +575,7 @@ function control_battle()
 				end
 			elseif unit and not unit.moved then
 				highlight_range(unit)
-			elseif not unit and properties[xy2n(pointer.x,pointer.y)]==battle_factions[active_faction] then
+			elseif not unit and properties[xy2n(pointer.x,pointer.y)]==battle_factions[active_faction] and mget(pointer.x*2,pointer.y*2)==SPRITE_FACTORY then
 				highlight={}
 				active_menu.ref=factory_menu
 				active_menu.x=1
