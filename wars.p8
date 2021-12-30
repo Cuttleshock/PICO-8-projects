@@ -594,7 +594,7 @@ function clear_faction(faction)
 	elseif active_faction==n then
 		end_turn(function ()
 			deli(battle_factions,n)
-			active_faction-=1
+			if (active_faction!=1) active_faction-=1
 		end)
 	else
 		deli(battle_factions,n)
