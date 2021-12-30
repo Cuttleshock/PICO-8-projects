@@ -16,15 +16,21 @@ STATE_G_BATTLE=2
 
 FACTION_RED=1001
 FACTION_BLUE=1002
+FACTION_GREEN=1003
+FACTION_YELLOW=1004
 
 faction_colours={
 	[FACTION_RED]=8,
-	[FACTION_BLUE]=1,
+	[FACTION_BLUE]=12,
+	[FACTION_GREEN]=11,
+	[FACTION_YELLOW]=10,
 }
 
 faction_names={
 	[FACTION_RED]='red',
 	[FACTION_BLUE]='blue',
+	[FACTION_GREEN]='green',
+	[FACTION_YELLOW]='yello',
 }
 
 MOVE_SLIME=2001
@@ -156,9 +162,13 @@ function init_battle()
 	battle_turn=1
 	active_faction=1
 	make_unit(7,5,FACTION_RED,slime_base)
-	local hurt_slime=make_unit(4,6,FACTION_RED,slime_base)
-	hurt_slime.hp=65
+	make_unit(4,6,FACTION_RED,slime_base)
 	make_unit(5,4,FACTION_BLUE,slime_base)
+	make_unit(5,5,FACTION_BLUE,slime_base)
+	make_unit(8,3,FACTION_GREEN,slime_base)
+	make_unit(9,4,FACTION_GREEN,slime_base)
+	make_unit(3,7,FACTION_YELLOW,slime_base)
+	make_unit(4,8,FACTION_YELLOW,slime_base)
 	highlight={}
 	path={ cost=0 }
 	map_w=16
