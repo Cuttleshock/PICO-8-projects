@@ -122,6 +122,8 @@ slime_base = {
 	movetype=MOVE_SLIME,
 	atk=ATK_SLIME,
 	def=DEF_SLIME,
+	name='slime',
+	cost=60,
 }
 
 skel_base = {
@@ -132,6 +134,13 @@ skel_base = {
 	movetype=MOVE_SKEL,
 	atk=ATK_SKEL,
 	def=DEF_SKEL,
+	name='skel',
+	cost=20,
+}
+
+land_units = {
+	skel_base,
+	slime_base,
 }
 
 -- menus
@@ -155,10 +164,6 @@ battle_menu = {
 menuitem_move = { text='move', cb=(function () move_highlighted_unit() end) }
 menuitem_attack = { text='attack', cb=(function() target_highlighted_unit() end) }
 menuitem_capture = { text='capture', cb=(function() capture_highlighted_unit() end) }
-
-factory_menu = {
-	{ text='roadworks', cb=noop, stay=true },
-}
 
 debug = {_names={}}
 function d_(str)
@@ -350,6 +355,29 @@ function end_turn(cb)
 		end
 	end
 	start_animation(truthy_noop, cb or noop)
+end
+
+function make_factory_menu()
+	local ret={}
+	for u in all(land_units) do
+		local text=(u.name..' g'..tostr(u.cost)..'0')
+		if faction_funds[battle_factions[active_faction]]>=u.cost then
+			add(ret,{
+				text=text,
+				cb=(function ()
+					faction_funds[battle_factions[active_faction]]-=u.cost
+					make_unit(pointer.x,pointer.y,battle_factions[active_faction],u).moved=true
+				end),
+			})
+		else
+			add(ret,{
+				text=text,
+				cb=noop,
+				stay=true,
+			})
+		end
+	end
+	return ret
 end
 
 function close_menu()
@@ -577,7 +605,7 @@ function control_battle()
 				highlight_range(unit)
 			elseif not unit and properties[xy2n(pointer.x,pointer.y)]==battle_factions[active_faction] and mget(pointer.x*2,pointer.y*2)==SPRITE_FACTORY then
 				highlight={}
-				active_menu.ref=factory_menu
+				active_menu.ref=make_factory_menu()
 				active_menu.x=1
 				active_menu.y=1
 				active_menu.w=60
