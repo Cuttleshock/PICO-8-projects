@@ -285,6 +285,10 @@ function end_turn(cb)
 	if (active_faction==1) battle_turn+=1
 	for u in all(units) do
 		u.moved=false
+		if u.faction==battle_factions[active_faction] and u.faction==properties[xy2n(u.x,u.y)] then
+			u.hp = min(u.hp+k_city_heal, k_max_unit_hp)
+		end
+	end
 	for n,f in pairs(properties) do
 		if f==battle_factions[active_faction] then
 			local newfunds=faction_funds[battle_factions[active_faction]]+k_city_income
