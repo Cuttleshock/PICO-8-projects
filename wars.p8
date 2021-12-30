@@ -142,6 +142,8 @@ timer=0
 
 -- battle-specific state
 units={}
+properties={}
+
 pointer={}
 highlight={}
 path={ cost=0 }
@@ -166,6 +168,7 @@ end
 function init_battle()
 	start_animation(truthy_noop, noop)
 	units={}
+	properties={}
 	init_pointer(3,3)
 	update_camera()
 	battle_factions={ FACTION_RED, FACTION_BLUE, FACTION_GREEN, FACTION_YELLOW }
@@ -618,6 +621,22 @@ end
 -->8
 -- draw methods
 
+function on_screen()
+	return true
+end
+
+function draw_properties()
+	for n,f in pairs(properties) do
+		local x,y=n2xy(n)
+		if on_screen(x,y) then
+			local sprite=mget(x*2,y*2)
+			pal(6,faction_colours[f]) -- recolour light-grey
+			spr(sprite,x*k_tilesize,y*k_tilesize,2,2)
+			pal()
+		end
+	end
+end
+
 function draw_highlight()
 	local sprite = 16*(((timer%30)\10)+1)
 	for x=0,map_w do
@@ -641,7 +660,7 @@ function draw_path()
 end
 
 function draw_actor(a)
-	if (a.invisible) return
+	if (a.invisible or not on_screen(a.x,a.y)) return
 
 	local frame = timer%(a.frames*k_animspeed)\k_animspeed
 	if a.moved then
