@@ -525,10 +525,10 @@ function control_battle()
 					if not unit or unit==highlight.unit then
 						active_menu.ref={ menuitem_move }
 						if #list_targets_from(highlight.unit,pointer.x,pointer.y)>0 then
-							add(active_menu.ref, menuitem_attack)
+							add(active_menu.ref, menuitem_attack, 1)
 						end
 						if highlight.unit.captures and ((properties[xy2n(pointer.x,pointer.y)] and properties[xy2n(pointer.x,pointer.y)]!=highlight.unit.faction) or (not properties[xy2n(pointer.x,pointer.y)] and capturable[fget(mget(pointer.x*2,pointer.y*2))])) then
-							add(active_menu.ref, menuitem_capture)
+							add(active_menu.ref, menuitem_capture, 1)
 						end
 						active_menu.y=1
 						active_menu.w=40
