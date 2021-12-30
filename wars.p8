@@ -152,6 +152,10 @@ menuitem_move = { text='move', cb=(function () move_highlighted_unit() end) }
 menuitem_attack = { text='attack', cb=(function() target_highlighted_unit() end) }
 menuitem_capture = { text='capture', cb=(function() capture_highlighted_unit() end) }
 
+factory_menu = {
+	{ text='roadworks', cb=noop, stay=true },
+}
+
 debug = {_names={}}
 function d_(str)
 	add(debug,str)
@@ -567,6 +571,12 @@ function control_battle()
 				end
 			elseif unit and not unit.moved then
 				highlight_range(unit)
+			elseif not unit and properties[xy2n(pointer.x,pointer.y)]==battle_factions[active_faction] then
+				highlight={}
+				active_menu.ref=factory_menu
+				active_menu.x=1
+				active_menu.y=1
+				active_menu.w=60
 			else
 				highlight={}
 				active_menu.ref=battle_menu
