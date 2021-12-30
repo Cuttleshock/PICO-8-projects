@@ -49,6 +49,9 @@ TERRAIN_MOUNTAIN=0b10
 TERRAIN_CITY=0b11
 TERRAIN_HQ=0b100
 
+-- sprite ref for city, to allow replacing a captured HQ
+SPRITE_CITY=37
+
 -- todo: replace these with nifty, nasty bitfields
 terrain_cost={
 	[TERRAIN_PLAINS]={
@@ -477,12 +480,18 @@ end
 function capture(unit)
 	if (not unit.capture_count) unit.capture_count=k_capture_max
 	unit.capture_count-=ceil(unit.hp*10/k_max_unit_hp)
-	local cb=noop
+	local cb,old_faction=noop,properties[xy2n(unit.x,unit.y)]
 
 	if unit.capture_count<=0 then
 		properties[xy2n(unit.x,unit.y)]=unit.faction
 		unit.capture_count=nil
-		-- todo: check if property is HQ, set cb=clear_faction() if so
+		if fget(mget(unit.x*2,unit.y*2))==TERRAIN_HQ then
+			mset(unit.x*2,unit.y*2,SPRITE_CITY)
+			mset(unit.x*2+1,unit.y*2,SPRITE_CITY+1)
+			mset(unit.x*2,unit.y*2+1,SPRITE_CITY+16)
+			mset(unit.x*2+1,unit.y*2+1,SPRITE_CITY+17)
+			cb=(function() clear_faction(old_faction) end)
+		end
 	end
 
 	start_animation(
@@ -647,6 +656,19 @@ function clear_faction(faction)
 	-- future-proofs for alternative win conditions
 	for u in all(units) do
 		if (u.faction==faction) del(units,u)
+	end
+
+	for n,f in pairs(properties) do
+		if f==faction then
+			properties[n]=nil
+			local x,y=n2xy(n)
+			if fget(mget(x*2,y*2))==TERRAIN_HQ then
+				mset(x*2,y*2,SPRITE_CITY)
+				mset(x*2+1,y*2,SPRITE_CITY+1)
+				mset(x*2,y*2+1,SPRITE_CITY+16)
+				mset(x*2+1,y*2+1,SPRITE_CITY+17)
+			end
+		end
 	end
 
 	local n
