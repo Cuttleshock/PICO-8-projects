@@ -149,6 +149,7 @@ highlight={}
 path={ cost=0 }
 targets={ selected=1 }
 battle_factions={}
+faction_funds={}
 active_faction=0
 battle_turn=0
 
@@ -174,6 +175,12 @@ function init_battle()
 	battle_factions={ FACTION_RED, FACTION_BLUE, FACTION_GREEN, FACTION_YELLOW }
 	battle_turn=1
 	active_faction=1
+	faction_funds={
+		[FACTION_RED]=0,
+		[FACTION_BLUE]=0,
+		[FACTION_GREEN]=0,
+		[FACTION_YELLOW]=0,
+	}
 	make_unit(7,5,FACTION_RED,slime_base)
 	make_unit(4,6,FACTION_RED,slime_base)
 	make_unit(5,4,FACTION_BLUE,slime_base)
@@ -275,6 +282,11 @@ end
 function end_turn(cb)
 	for u in all(units) do
 		u.moved=false
+	for n,f in pairs(properties) do
+		if f==battle_factions[active_faction] then
+			local newfunds=faction_funds[battle_factions[active_faction]]+k_city_income
+			faction_funds[battle_factions[active_faction]]=min(newfunds,k_max_funds)
+		end
 	end
 	active_faction=active_faction%#battle_factions + 1
 	if (active_faction==1) battle_turn+=1
@@ -695,13 +707,15 @@ function draw_targets()
 end
 
 function draw_faction()
-	rectfill(cam_x*k_tilesize+103,cam_y*k_tilesize,cam_x*k_tilesize+128,cam_y*k_tilesize+6,faction_colours[battle_factions[active_faction]])
-	print(
-		'day '..battle_turn%100, -- cheat to avoid long days being cropped
-		cam_x*k_tilesize+104,
-		cam_y*k_tilesize+1,
-		7 -- white
-	)
+	local x1,y0=cam_x*k_tilesize+128,cam_y*k_tilesize
+	rectfill(x1-25,y0,x1,y0+6,faction_colours[battle_factions[active_faction]])
+	print('day '..battle_turn%100,x1-24,y0+1,7) -- white
+
+	rectfill(x1-27,y0+7,x1,y0+13,6) -- light grey
+	print('g',x1-26,y0+8,0) -- black
+	local str=tostr(faction_funds[battle_factions[active_faction]])
+	if (faction_funds[battle_factions[active_faction]]>0) str=str..'0'
+	print(str,x1-20,y0+8)
 end
 
 function draw_menu()
@@ -828,6 +842,7 @@ function _draw()
 	if game_state==STATE_G_MAIN_MENU then
 		cls(5)
 	elseif game_state==STATE_G_BATTLE then
+		draw_properties()
 		draw_highlight()
 		draw_path()
 		draw_units()
