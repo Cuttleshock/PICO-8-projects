@@ -718,6 +718,13 @@ function draw_actor(a)
 			print(display_hp,x1-3,y1-5,7) -- white
 		end
 	end
+
+	if a.capture_count then
+		local x0,y0=a.x*k_tilesize,a.y*k_tilesize
+		local x1 = a.capture_count>=10 and x0+8 or x0+4
+		rectfill(x0,y0,x1,y0+6,0) -- black
+		print(a.capture_count,x0+1,y0+1,5) -- olive
+	end
 end
 
 function draw_units()
