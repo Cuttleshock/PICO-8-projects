@@ -798,10 +798,10 @@ function draw_properties()
 	end
 end
 
-function draw_highlight()
+function draw_highlight(h)
 	local sprite = 16*(((timer%30)\10)+1)
 	local x,y
-	for n,_ in pairs(highlight) do
+	for n,_ in pairs(h or highlight) do
 		if type(n)!='string' then
 			x,y=n2xy(n)
 			spr(sprite,x*k_tilesize,y*k_tilesize)
@@ -855,10 +855,9 @@ function draw_units()
 end
 
 function draw_targets()
-	for i=1,#targets do
-		local x0,y0=targets[i].x*k_tilesize+6,targets[i].y*k_tilesize+6
-		rectfill(x0,y0,x0+3,y0+3,(i==targets.selected and 4 or 15)) -- brown or peach
-	end
+	pal(12,14) -- blue to pink
+	draw_highlight(targets)
+	pal()
 end
 
 function draw_faction()
@@ -1005,11 +1004,8 @@ function _draw()
 		draw_highlight()
 		draw_path()
 		draw_units()
-		if #targets>0 then
-			draw_targets()
-		else
-			draw_actor(pointer)
-		end
+		draw_targets()
+		draw_actor(pointer)
 		draw_faction()
 	end
 	draw_menu()
