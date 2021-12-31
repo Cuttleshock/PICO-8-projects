@@ -552,7 +552,7 @@ function control_targets()
 		move_highlighted_unit(function() attack(unit, targets[n]) end)
 	elseif btnp(❎) then
 		targets={}
-		pointer.x,pointer.y=n2xy(path[#path])
+		pointer.x,pointer.y=n2xy(path[#path] or xy2n(highlight.unit.x,highlight.unit.y))
 	end
 end
 
