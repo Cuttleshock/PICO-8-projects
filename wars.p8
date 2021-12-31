@@ -629,15 +629,15 @@ end
 function update_camera()
 	-- move camera right/left
 	if pointer.x < cam_x+2 then
-		cam_x = max(0,pointer.x-2)
+		cam_x = max(0,cam_x-0.5)
 	elseif pointer.x > cam_x+5 then
-		cam_x = min(map_w-8,pointer.x-5)
+		cam_x = min(map_w-8,cam_x+0.5)
 	end
 	-- move camera up/down
 	if pointer.y < cam_y+2 then
-		cam_y = max(0,pointer.y-2)
+		cam_y = max(0,cam_y-0.5)
 	elseif pointer.y > cam_y+5 then
-		cam_y = min(map_h-8,pointer.y-5)
+		cam_y = min(map_h-8,cam_y+0.5)
 	end
 end
 
