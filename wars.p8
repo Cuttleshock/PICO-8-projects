@@ -167,14 +167,13 @@ menuitem_capture = { text='capture', cb=(function() capture_highlighted_unit() e
 
 debug = {_names={}}
 function d_(str)
-	add(debug,str)
+	add(debug,tostr(str))
 	if (#debug > 12) deli(debug,1)
 end
 
 function popd_()
 	cursor(cam_x*k_tilesize,cam_y*k_tilesize)
 	for d in all(debug) do
-		-- print(tostr(d,true))
 		print(d)
 	end
 end
