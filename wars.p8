@@ -508,7 +508,7 @@ function control_targets()
 		pointer.x,pointer.y=n2xy(last(targets,n) or last(targets))
 	elseif btnp(🅾️) then
 		local unit = highlight.unit -- need reference after highlight cleared
-		pointer.x,pointer.y=n2xy(path[#path])
+		pointer.x,pointer.y=n2xy(path[#path] or xy2n(unit.x,unit.y)) -- if attacked from standing position
 		move_highlighted_unit(function() attack(unit, targets[n]) end)
 	elseif btnp(❎) then
 		targets={}
