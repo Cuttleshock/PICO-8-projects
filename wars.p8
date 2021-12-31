@@ -900,6 +900,17 @@ function draw_targets()
 	pal()
 end
 
+function draw_pointer()
+	draw_actor(pointer)
+	local u=targets[xy2n(pointer.x,pointer.y)]
+	if u then
+		local dmg,x0,y0=calc_damage(highlight.unit,u,true),pointer.x*k_tilesize+12,pointer.y*k_tilesize-6
+		rect(x0,y0,x0+18,y0+8,0) -- black
+		rectfill(x0+1,y0+1,x0+17,y0+7,7) -- white
+		print(tostr(dmg)..'%',x0+2*(4-#tostr(dmg)),y0+2,0)
+	end
+end
+
 function draw_faction()
 	local x1,y0=cam_x*k_tilesize+128,cam_y*k_tilesize
 	rectfill(x1-25,y0,x1,y0+6,faction_colours[battle_factions[active_faction]])
@@ -1045,7 +1056,7 @@ function _draw()
 		draw_path()
 		draw_units()
 		draw_targets()
-		draw_actor(pointer)
+		draw_pointer()
 		draw_faction()
 	end
 	draw_menu()
