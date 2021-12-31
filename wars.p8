@@ -561,13 +561,13 @@ function capture_highlighted_unit()
 	move_highlighted_unit(function() capture(unit) end)
 end
 
-function damage(u1,u2)
+function calc_damage(u1,u2,disable_rand)
 	local dmg = k_damage_scale
-	dmg *= (1+rnd(0.1))
+	if (not disable_rand) dmg *= (1+rnd(0.1))
 	dmg *= ceil(u1.hp*5/k_max_unit_hp)/5
 	dmg *= damage_table[u1.atk][u2.def]
 	dmg *= (1-get_defence(u2.x,u2.y)/10)
-	u2.hp -= flr(dmg)
+	return flr(dmg)
 end
 
 function attack(attacker, defender)
@@ -575,9 +575,9 @@ function attack(attacker, defender)
 		animate_skirmish_frame,
 		(function()
 			targets={}
-			damage(attacker, defender)
+			defender.hp-=calc_damage(attacker,defender)
 			if not attacker.ranged and not defender.ranged and defender.hp>0 then
-				damage(defender, attacker)
+				attacker.hp-=calc_damage(defender, attacker)
 				if (attacker.hp<=0) delete_unit(attacker)
 			elseif defender.hp<=0 then
 				delete_unit(defender)
