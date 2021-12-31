@@ -510,13 +510,24 @@ function move_unit(unit, x, y, cb)
 	)
 end
 
+function get_attack_range(unit,x,y)
+	local r_min,r_max=unit.r_min or 1,unit.r_max or 1
+	local ret={}
+
+	for x1=max(x-r_max,0),min(x+r_max,map_w) do
+		for y1=max(y-r_max,0),min(y+r_max,map_h) do
+			local distance=abs(x-x1)+abs(y-y1)
+			if (distance>=r_min and distance<=r_max) ret[xy2n(x1,y1)]=true
+		end
+	end
+
+	return ret
+end
+
 function list_targets_from(unit,x,y)
-	local locations={
-		[xy2n(x+1,y)]=true,
-		[xy2n(x,y+1)]=true,
-		[xy2n(x-1,y)]=true,
-		[xy2n(x,y-1)]=true,
-	}
+	if (unit.ranged and (x!=unit.x or y!=unit.y)) return {}
+
+	local locations=get_attack_range(unit,x,y)
 	local ret={}
 	for u in all(units) do
 		if (u.faction!=unit.faction and locations[xy2n(u.x,u.y)]) ret[xy2n(u.x,u.y)]=u
@@ -565,10 +576,10 @@ function attack(attacker, defender)
 		(function()
 			targets={}
 			damage(attacker, defender)
-			if defender.hp>0 then
+			if not attacker.ranged and not defender.ranged and defender.hp>0 then
 				damage(defender, attacker)
 				if (attacker.hp<=0) delete_unit(attacker)
-			else
+			elseif defender.hp<=0 then
 				delete_unit(defender)
 			end
 		end),
