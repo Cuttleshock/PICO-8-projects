@@ -178,6 +178,16 @@ function popd_()
 	end
 end
 
+-- sadly O(n)
+function last(t,k_curr)
+	local k_last=nil
+	for k,v in pairs(t) do
+		if (k==k_curr) break
+		k_last=k
+	end
+	return k_last,t[k_last]
+end
+
 -->8
 -- state and update methods
 
@@ -200,7 +210,7 @@ properties={}
 pointer={}
 highlight={}
 path={ cost=0 }
-targets={ selected=1 }
+targets={}
 battle_factions={}
 faction_funds={}
 active_faction=0
@@ -478,28 +488,31 @@ function list_targets_from(unit,x,y)
 		[xy2n(x-1,y)]=true,
 		[xy2n(x,y-1)]=true,
 	}
-	local ret={ selected=1 }
+	local ret={}
 	for u in all(units) do
-		if (u.faction!=unit.faction and locations[xy2n(u.x,u.y)]) add(ret,u)
+		if (u.faction!=unit.faction and locations[xy2n(u.x,u.y)]) ret[xy2n(u.x,u.y)]=u
 	end
 	return ret
 end
 
 function target_highlighted_unit()
 	targets=list_targets_from(highlight.unit,pointer.x,pointer.y)
+	pointer.x,pointer.y=n2xy(next(targets))
 end
 
 function control_targets()
+	local n=xy2n(pointer.x,pointer.y)
 	if btnp(➡️) or btnp(⬇️) then
-		targets.selected=(targets.selected%#targets)+1
+		pointer.x,pointer.y=n2xy(next(targets,n) or next(targets))
 	elseif btnp(⬅️) or btnp(⬆️) then
-		targets.selected-=1
-		if (targets.selected==0) targets.selected=#targets
+		pointer.x,pointer.y=n2xy(last(targets,n) or last(targets))
 	elseif btnp(🅾️) then
 		local unit = highlight.unit -- need reference after highlight cleared
-		move_highlighted_unit(function() attack(unit, targets[targets.selected]) end)
+		pointer.x,pointer.y=n2xy(path[#path])
+		move_highlighted_unit(function() attack(unit, targets[n]) end)
 	elseif btnp(❎) then
-		targets={ selected=1 }
+		targets={}
+		pointer.x,pointer.y=n2xy(path[#path])
 	end
 end
 
@@ -521,7 +534,7 @@ function attack(attacker, defender)
 	start_animation(
 		animate_skirmish_frame,
 		(function()
-			targets={ selected=1 }
+			targets={}
 			damage(attacker, defender)
 			if defender.hp>0 then
 				damage(defender, attacker)
@@ -565,7 +578,7 @@ function control_battle()
 		end
 	elseif active_menu.ref then
 		return control_menu()
-	elseif #targets>0 then
+	elseif next(targets) then
 		return control_targets()
 	else
 		if btnp(🅾️) then
@@ -581,7 +594,7 @@ function control_battle()
 				if highlight.unit.faction==battle_factions[active_faction] then
 					if not unit or unit==highlight.unit then
 						active_menu.ref={ menuitem_move }
-						if #list_targets_from(highlight.unit,pointer.x,pointer.y)>0 then
+						if next(list_targets_from(highlight.unit,pointer.x,pointer.y)) then
 							add(active_menu.ref, menuitem_attack, 1)
 						end
 						if highlight.unit.captures and ((properties[xy2n(pointer.x,pointer.y)] and properties[xy2n(pointer.x,pointer.y)]!=highlight.unit.faction) or (not properties[xy2n(pointer.x,pointer.y)] and capturable[fget(mget(pointer.x*2,pointer.y*2))])) then
