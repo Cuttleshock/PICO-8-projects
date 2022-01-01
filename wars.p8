@@ -194,7 +194,7 @@ function truthy_noop() return true end
 main_menu = {
 	{ text='battle', cb=(function () push_game_state(STATE_G_BATTLE, init_battle) end) },
 	{ text='nothing', cb=noop, stay=true },
-	{ text='also no', cb=noop, stay=true },
+	{ text='disabled', cb=noop, disabled=true },
 	sticky=true,
 }
 
@@ -451,7 +451,7 @@ end
 function control_menu()
 	local menu=menu_stack[#menu_stack]
 
-	if btnp(🅾️) then
+	if btnp(🅾️) and not menu.ref[menu.selected].disabled then
 		menu.ref[menu.selected].cb()
 		if (not menu.ref[menu.selected].stay) close_menu()
 		return
@@ -952,8 +952,10 @@ function draw_menu()
 	rect(x,y,x+w,y+3+#menu.ref*8,7) -- white
 
 	for i=1,#menu.ref do
-		if menu.selected==i then
-			rectfill(x+2,y-6+i*8,x+w-2,y+1+i*8,2) -- burgundy
+		if (menu.selected==i) rectfill(x+2,y-6+i*8,x+w-2,y+1+i*8,2) -- burgundy
+		if menu.ref[i].disabled then
+			print(menu.ref[i].text,x+3,y-5+i*8,5) -- grey
+		elseif menu.selected==i then
 			print(menu.ref[i].text,x+3,y-5+i*8,10) -- yellow
 		else
 			print(menu.ref[i].text,x+3,y-4+i*8,7) -- white
