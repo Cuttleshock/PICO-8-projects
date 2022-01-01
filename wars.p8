@@ -48,6 +48,7 @@ ATK_CATA=3003
 DEF_SLIME=4001
 DEF_SKEL=4002
 DEF_CATA=4003
+DEF_CART=4004
 
 -- sprite flags for each terrain
 TERRAIN_PLAINS=0b1
@@ -102,16 +103,19 @@ damage_table={
 		[DEF_SLIME]=1.1,
 		[DEF_SKEL]=1.2,
 		[DEF_CATA]=1.3,
+		[DEF_CART]=1.3,
 	},
 	[ATK_SKEL]={
 		[DEF_SLIME]=0.7,
 		[DEF_SKEL]=1,
 		[DEF_CATA]=0.6,
+		[DEF_CART]=0.5,
 	},
 	[ATK_CATA]={
 		[DEF_SLIME]=1.6,
 		[DEF_SKEL]=1.6,
 		[DEF_CATA]=1.6,
+		[DEF_CART]=1.6,
 	},
 }
 
@@ -165,8 +169,20 @@ cata_base = {
 	cost=80,
 }
 
+cart_base = {
+	spr=1,-- todo
+	frames=2,
+	range=10,
+	carries={ MOVE_SKEL },
+	movetype=MOVE_WHEEL,
+	def=DEF_CART,
+	name='cart',
+	cost=30,
+}
+
 land_units = {
 	skel_base,
+	cart_base,
 	slime_base,
 	cata_base,
 }
