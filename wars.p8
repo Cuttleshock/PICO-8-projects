@@ -240,8 +240,7 @@ game_state=STATE_G_MAIN_MENU
 state_coro_=nil
 
 -- global state
-menu_item=1
-active_menu={}
+menu_stack={}
 
 anim_coro_=nil
 
@@ -266,11 +265,7 @@ cam_x=0
 cam_y=0
 
 function init_main_menu()
-	active_menu.ref=main_menu
-	active_menu.x=40
-	active_menu.y=20
-	active_menu.w=48
-	menu_item=1
+	push_menu(main_menu,40,20,48,true)
 end
 
 function init_battle()
@@ -434,18 +429,34 @@ function make_factory_menu()
 	return ret
 end
 
+function push_menu(ref,x,y,w,sticky)
+	add(menu_stack,{
+		ref=ref,
+		selected=1,
+		sticky=sticky,
+		x=x,
+		y=y,
+		w=w,
+	})
+end
+
+function pop_menu()
+	deli(menu_stack,#menu_stack)
+end
+
 function close_menu()
-	active_menu.ref=nil
-	menu_item=1
+	menu_stack={}
 end
 
 function control_menu()
+	local menu=menu_stack[#menu_stack]
+
 	if btnp(🅾️) then
-		active_menu.ref[menu_item].cb()
-		if (not active_menu.ref[menu_item].stay) close_menu()
+		menu.ref[menu.selected].cb()
+		if (not menu.ref[menu.selected].stay) close_menu()
 		return
-	elseif btnp(❎) and not active_menu.ref.sticky then
-		return close_menu()
+	elseif btnp(❎) and not menu.sticky then
+		return pop_menu()
 	end
 
 	local dm = 0
@@ -457,7 +468,7 @@ function control_menu()
 
 	if dm != 0 then
 		sfx(3)
-		menu_item=(menu_item+dm-1)%#active_menu.ref+1
+		menu.selected=(menu.selected+dm-1)%#menu.ref+1
 	end
 end
 
@@ -632,7 +643,7 @@ function control_battle()
 		if btnp(🅾️) or btnp(❎) then
 			end_animation()
 		end
-	elseif active_menu.ref then
+	elseif next(menu_stack) then
 		return control_menu()
 	elseif next(targets) then
 		return control_targets()
@@ -649,16 +660,14 @@ function control_battle()
 			if highlight[xy2n(pointer.x,pointer.y)] then
 				if highlight.unit.faction==battle_factions[active_faction] then
 					if not unit or unit==highlight.unit then
-						active_menu.ref={ menuitem_move }
+						local menu={ menuitem_move }
 						if next(list_targets_from(highlight.unit,pointer.x,pointer.y)) then
-							add(active_menu.ref, menuitem_attack, 1)
+							add(menu, menuitem_attack, 1)
 						end
 						if highlight.unit.captures and ((properties[xy2n(pointer.x,pointer.y)] and properties[xy2n(pointer.x,pointer.y)]!=highlight.unit.faction) or (not properties[xy2n(pointer.x,pointer.y)] and capturable[fget(mget(pointer.x*2,pointer.y*2))])) then
-							add(active_menu.ref, menuitem_capture, 1)
+							add(menu, menuitem_capture, 1)
 						end
-						active_menu.y=1
-						active_menu.w=40
-						active_menu.x=126-active_menu.w
+						push_menu(menu,86,1,40)
 					elseif unit and not unit.moved then
 						highlight_range(unit)
 					end
@@ -673,16 +682,10 @@ function control_battle()
 				highlight_range(unit)
 			elseif not unit and properties[xy2n(pointer.x,pointer.y)]==battle_factions[active_faction] and mget(pointer.x*2,pointer.y*2)==SPRITE_FACTORY then
 				highlight={}
-				active_menu.ref=make_factory_menu()
-				active_menu.x=1
-				active_menu.y=1
-				active_menu.w=60
+				push_menu(make_factory_menu(),1,1,60)
 			else
 				highlight={}
-				active_menu.ref=battle_menu
-				active_menu.x=1
-				active_menu.y=1
-				active_menu.w=60
+				push_menu(battle_menu,1,1,60)
 			end
 		elseif btnp(❎) then
 			highlight={}
@@ -940,19 +943,20 @@ function draw_faction()
 end
 
 function draw_menu()
-	if (not active_menu.ref) return
+	if (not next(menu_stack)) return
 
-	local x,y,w=active_menu.x+cam_x*k_tilesize,active_menu.y+cam_y*k_tilesize,active_menu.w
+	local menu=menu_stack[#menu_stack]
+	local x,y,w=menu.x+cam_x*k_tilesize,menu.y+cam_y*k_tilesize,menu.w
 
-	rectfill(x+2,y+2,x+w-2,y+1+#active_menu.ref*8,13) -- lilac
-	rect(x,y,x+w,y+3+#active_menu.ref*8,7) -- white
+	rectfill(x+2,y+2,x+w-2,y+1+#menu.ref*8,13) -- lilac
+	rect(x,y,x+w,y+3+#menu.ref*8,7) -- white
 
-	for i=1,#active_menu.ref do
-		if menu_item==i then
+	for i=1,#menu.ref do
+		if menu.selected==i then
 			rectfill(x+2,y-6+i*8,x+w-2,y+1+i*8,2) -- burgundy
-			print(active_menu.ref[i].text,x+3,y-5+i*8,10) -- yellow
+			print(menu.ref[i].text,x+3,y-5+i*8,10) -- yellow
 		else
-			print(active_menu.ref[i].text,x+3,y-4+i*8,7) -- white
+			print(menu.ref[i].text,x+3,y-4+i*8,7) -- white
 		end
 	end
 end
