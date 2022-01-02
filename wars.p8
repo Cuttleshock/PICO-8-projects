@@ -460,6 +460,11 @@ function open_action_menu(sticky)
 	if highlight.unit.captures and ((properties[xy2n(pointer.x,pointer.y)] and properties[xy2n(pointer.x,pointer.y)]!=highlight.unit.faction) or (not properties[xy2n(pointer.x,pointer.y)] and capturable[fget(mget(pointer.x*2,pointer.y*2))])) then
 		add(menu, menuitem_capture, 1)
 	end
+	if can_unload_from(highlight.unit,pointer.x,pointer.y) then
+		for u in all(highlight.unit.carrying) do
+			add(menu, make_unload_menuitem(u), 1)
+		end
+	end
 	push_menu(menu,86,1,40,sticky)
 end
 
@@ -651,6 +656,22 @@ function capture(unit)
 		cb,
 		unit,0
 	)
+end
+
+function make_unload_menuitem(unit)
+	local locations=list_unload_from(unit,pointer.x,pointer.y)
+
+	return {
+		text=unit.name..' '..tostr(ceil(unit.hp*10/k_max_unit_hp))..'/10',
+		cb=(function() target_unload_highlighted_unit(locations) end),
+		disabled=(not next(locations)) -- disabled if no available spots
+	}
+end
+
+function can_unload_from(unit,x,y)
+	-- unit must be able to load, and it must be on a valid unload spot -
+	-- heuristically, a standable spot for the first loadable movetype.
+	return unit.carries and terrain_cost[fget(mget(x*2,y*2))][next(unit.carries)]
 end
 
 function load_highlighted_unit(carrier)
