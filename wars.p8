@@ -976,7 +976,7 @@ end
 function draw_properties()
 	for n,f in pairs(properties) do
 		local x,y=n2xy(n)
-		if on_screen(x,y) then
+		if on_screen(x,y) and (not fog or visible[n]) then
 			local sprite=mget(x*2,y*2)
 			pal(6,faction_colours[f]) -- recolour light-grey
 			spr(sprite,x*k_tilesize,y*k_tilesize,2,2)
