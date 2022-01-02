@@ -339,11 +339,13 @@ function make_unit(x,y,faction,base)
 	}
 	setmetatable(unit, actor_metatable)
 	add(units, unit)
+	update_visible()
 	return unit -- to allow further tweaks
 end
 
 function delete_unit(unit)
 	del(units, unit)
+	update_visible()
 	check_faction_defeated(unit.faction)
 end
 
@@ -444,6 +446,7 @@ function end_turn(cb)
 			faction_funds[battle_factions[active_faction]]=min(newfunds,k_max_funds)
 		end
 	end
+	update_visible()
 	start_animation(truthy_noop, cb or noop)
 end
 
@@ -589,6 +592,7 @@ function move_unit(unit, x, y, cb)
 		(function()
 			unit.invisible,unit.x,unit.y=false,x,y
 			if (cb) cb()
+			update_visible()
 		end),
 		unit,path,0
 	)
