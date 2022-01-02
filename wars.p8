@@ -173,7 +173,9 @@ cart_base = {
 	spr=64,
 	frames=2,
 	range=10,
-	carries={ MOVE_SKEL },
+	carries={ [MOVE_SKEL]=true },
+	carry_max=2,
+	carrying={},
 	movetype=MOVE_WHEEL,
 	def=DEF_CART,
 	name='cart',
@@ -292,6 +294,7 @@ function init_battle()
 	make_unit(4,6,FACTION_RED,skel_base)
 	make_unit(6,6,FACTION_RED,cata_base)
 	make_unit(6,7,FACTION_RED,cart_base)
+	make_unit(6,8,FACTION_RED,skel_base)
 	make_unit(5,4,FACTION_BLUE,slime_base)
 	make_unit(4,4,FACTION_BLUE,skel_base)
 	make_unit(8,3,FACTION_GREEN,slime_base)
@@ -650,6 +653,16 @@ function capture(unit)
 	)
 end
 
+function load_highlighted_unit(carrier)
+	local unit=highlight.unit -- keep reference after highlight cleared
+	move_highlighted_unit(function() load(unit,carrier) end)
+end
+
+function load(unit,carrier)
+	add(carrier.carrying,unit)
+	delete_unit(unit)
+end
+
 function control_battle()
 	if animation_in_progress() then
 		if btnp(🅾️) or btnp(❎) then
@@ -673,9 +686,15 @@ function control_battle()
 				if highlight.unit.faction==battle_factions[active_faction] then
 					if not unit or unit==highlight.unit then
 						open_action_menu()
+					elseif unit then
+						if unit.carries and unit.carries[highlight.unit.movetype] and #unit.carrying<unit.carry_max then
+							push_menu({{
+								text='load',
+								cb=(function() load_highlighted_unit(unit) end),
+							}},86,1,40)
+						elseif not unit.moved then
+							highlight_range(unit)
 						end
-					elseif unit and not unit.moved then
-						highlight_range(unit)
 					end
 				else
 					if unit and not unit.moved then
