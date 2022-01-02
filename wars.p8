@@ -493,7 +493,7 @@ function close_menu()
 end
 
 function open_action_menu(sticky)
-	local menu={ menuitem_move }
+	local menu,x={ menuitem_move },86
 	if next(list_targets_from(highlight.unit,pointer.x,pointer.y,TARGET_ATTACK)) then
 		add(menu, menuitem_attack, 1)
 	end
@@ -502,10 +502,11 @@ function open_action_menu(sticky)
 	end
 	if can_unload_from(highlight.unit,pointer.x,pointer.y) then
 		for u in all(highlight.unit.carrying) do
+			x=min(x,98-4*#u.name)
 			add(menu, make_unload_menuitem(u), 1)
 		end
 	end
-	push_menu(menu,86,1,40,sticky)
+	push_menu(menu,x,1,126-x,sticky)
 end
 
 function control_menu()
