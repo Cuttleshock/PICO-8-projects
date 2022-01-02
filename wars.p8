@@ -449,6 +449,17 @@ function close_menu()
 	menu_stack={}
 end
 
+function open_action_menu(sticky)
+	local menu={ menuitem_move }
+	if next(list_targets_from(highlight.unit,pointer.x,pointer.y,TARGET_ATTACK)) then
+		add(menu, menuitem_attack, 1)
+	end
+	if highlight.unit.captures and ((properties[xy2n(pointer.x,pointer.y)] and properties[xy2n(pointer.x,pointer.y)]!=highlight.unit.faction) or (not properties[xy2n(pointer.x,pointer.y)] and capturable[fget(mget(pointer.x*2,pointer.y*2))])) then
+		add(menu, menuitem_capture, 1)
+	end
+	push_menu(menu,86,1,40,sticky)
+end
+
 function control_menu()
 	local menu=menu_stack[#menu_stack]
 
@@ -661,14 +672,8 @@ function control_battle()
 			if highlight[xy2n(pointer.x,pointer.y)] then
 				if highlight.unit.faction==battle_factions[active_faction] then
 					if not unit or unit==highlight.unit then
-						local menu={ menuitem_move }
-						if next(list_targets_from(highlight.unit,pointer.x,pointer.y)) then
-							add(menu, menuitem_attack, 1)
+						open_action_menu()
 						end
-						if highlight.unit.captures and ((properties[xy2n(pointer.x,pointer.y)] and properties[xy2n(pointer.x,pointer.y)]!=highlight.unit.faction) or (not properties[xy2n(pointer.x,pointer.y)] and capturable[fget(mget(pointer.x*2,pointer.y*2))])) then
-							add(menu, menuitem_capture, 1)
-						end
-						push_menu(menu,86,1,40)
 					elseif unit and not unit.moved then
 						highlight_range(unit)
 					end
