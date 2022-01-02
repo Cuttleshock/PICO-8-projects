@@ -576,6 +576,7 @@ function move_pointer()
 	end
 end
 
+-- indirect callers must update_visible() after all state is changed in their cb.
 function move_highlighted_unit(cb)
 	move_unit(highlight.unit, pointer.x, pointer.y, cb)
 	highlight.unit.moved=true
@@ -583,6 +584,7 @@ function move_highlighted_unit(cb)
 end
 
 function move_unit(unit, x, y, cb)
+	cb=cb or update_visible
 	if (unit.sfx) sfx(unit.sfx)
 
 	unit.invisible=true
@@ -591,8 +593,7 @@ function move_unit(unit, x, y, cb)
 		animate_unit_move_frame,
 		(function()
 			unit.invisible,unit.x,unit.y=false,x,y
-			if (cb) cb()
-			update_visible()
+			cb()
 		end),
 		unit,path,0
 	)
@@ -681,6 +682,9 @@ function attack(attacker, defender)
 			elseif defender.hp<=0 then
 				delete_unit(defender)
 			end
+			-- redundant if delete_unit() called, but necessary part of the
+			-- move() lifecycle otherwise
+			update_visible()
 		end),
 		attacker,defender,0
 	)
@@ -701,6 +705,9 @@ function capture(unit)
 			mset(unit.x*2+1,unit.y*2+1,SPRITE_CITY+17)
 			cb=(function() clear_faction(old_faction) end)
 		end
+		-- we could shortcut by just setting (x,y) visible, but this works with
+		-- the move() cb lifecycle
+		update_visible()
 	end
 
 	start_animation(
