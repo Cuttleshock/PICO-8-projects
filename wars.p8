@@ -139,6 +139,7 @@ slime_base = {
 	spr=5,
 	frames=2,
 	range=3,
+	vision=3,
 	captures=false,
 	movetype=MOVE_SLIME,
 	atk=ATK_SLIME,
@@ -151,6 +152,7 @@ skel_base = {
 	spr=9,
 	frames=2,
 	range=3,
+	vision=2,
 	captures=true,
 	movetype=MOVE_SKEL,
 	atk=ATK_SKEL,
@@ -163,6 +165,7 @@ cata_base = {
 	spr=43,
 	frames=2,
 	range=6,
+	vision=2,
 	ranged=true,
 	r_min=2,
 	r_max=4,
@@ -177,6 +180,7 @@ cart_base = {
 	spr=64,
 	frames=2,
 	range=10,
+	vision=3,
 	carries={ [MOVE_SKEL]=true },
 	carry_max=2,
 	carrying={},
@@ -255,6 +259,7 @@ timer=0
 -- battle-specific state
 units={}
 properties={}
+visible={}
 
 pointer={}
 highlight={}
@@ -265,6 +270,7 @@ battle_factions={}
 faction_funds={}
 active_faction=0
 battle_turn=0
+fog=true
 
 map_w=0
 map_h=0
@@ -308,6 +314,8 @@ function init_battle()
 	make_unit(4,8,FACTION_YELLOW,skel_base)
 	highlight={}
 	path={ cost=0 }
+	visible={}
+	fog=true
 	map_w=16
 	map_h=16
 	end_turn()
@@ -352,6 +360,26 @@ end
 function n2xy(n)
 	n = n or 0xffff.f
 	return (n >> 8) & 0xff, n & 0xff, (n & 0x0.f) << 4
+end
+
+function update_visible()
+	local faction=battle_factions[active_faction]
+	visible={}
+	for p,f in pairs(properties) do
+		if f==faction then
+			local x,y=n2xy(p)
+			visible[p]=mget(x*2,y*2)
+		end
+	end
+	for u in all(units) do
+		if u.faction==faction then
+			local vision_range=get_attack_range(u,u.x,u.y,0,u.vision)
+			for r in pairs(vision_range) do
+				local x,y=n2xy(r)
+				visible[r]=mget(x*2,y*2)
+			end
+		end
+	end
 end
 
 function get_mvmt(unit,x,y)
@@ -562,8 +590,9 @@ function move_unit(unit, x, y, cb)
 	)
 end
 
-function get_attack_range(unit,x,y)
-	local r_min,r_max=unit.r_min or 1,unit.r_max or 1
+-- r_min, r_max overrides to use this function for vision range
+function get_attack_range(unit,x,y,r_min,r_max)
+	local r_min,r_max=r_min or unit.r_min or 1,r_max or unit.r_max or 1
 	local ret={}
 
 	for x1=max(x-r_max,0),min(x+r_max,map_w) do
