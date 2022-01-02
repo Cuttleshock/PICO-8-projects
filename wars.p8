@@ -578,13 +578,31 @@ end
 
 -- indirect callers must update_visible() after all state is changed in their cb.
 function move_highlighted_unit(cb)
-	move_unit(highlight.unit, pointer.x, pointer.y, cb)
+	move_unit(highlight.unit, path, cb)
 	highlight.unit.moved=true
 	highlight={}
 end
 
-function move_unit(unit, x, y, cb)
+function move_unit(unit, path, cb)
 	cb=cb or update_visible
+
+	-- todo: this is the kicker. units _needs_ to be a hash.
+	local trapped=false
+	for i=1,#path do
+		if not trapped then
+			for u in all(units) do
+				if u.invisible and u.faction!=highlight.unit.faction and xy2n(u.x,u.y)==path[i] then
+					trapped=true
+					cb=(function() hit_trap(unit) end)
+					break
+				end
+			end
+		end
+		-- call this afterwards, as the path segment that we got trapped on
+		-- must also be nullified
+		if (trapped) path[i]=nil
+	end
+
 	if (unit.sfx) sfx(unit.sfx)
 
 	unit.invisible=true
@@ -592,10 +610,20 @@ function move_unit(unit, x, y, cb)
 	start_animation(
 		animate_unit_move_frame,
 		(function()
-			unit.invisible,unit.x,unit.y=false,x,y
+			unit.invisible,unit.x,unit.y=false,n2xy(path[#path])
 			cb()
 		end),
 		unit,path,0
+	)
+end
+
+function hit_trap(trapped,trapper)
+	targets={}
+	update_visible()
+	start_animation(
+		animate_hit_trap_frame,
+		noop,
+		trapped,trapper,0
 	)
 end
 
@@ -1144,6 +1172,12 @@ function animate_unload_frame(u1,u2,x,y,frame)
 	return true -- todo
 end
 
+function animate_hit_trap_frame(trapped,trapper,frame)
+	if (frame==0) sfx(4)
+	print('\#7!',trapped.x*k_tilesize+6,trapped.y*k_tilesize-2,8) -- red on white
+	return frame>=10,trapped,trapper,frame+1
+end
+
 function animate_unit_move_frame(unit,path,frame)
 	local n=(frame\4)
 	local k=(frame%4)/4
@@ -1348,3 +1382,4 @@ __sfx__
 000600001f11013110001000010000100001000010000100001000010000100001000010000100001000010000100001000010000100001000010000100001000010000100001000010000100001000010000100
 000600001d05020050210002200000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
 000800002113021100001000010000100001000010000100001000010000100001000010000100001000010000100001000010000100001000010000100001000010000100001000010000100001000010000100
+000c0000192201f220002000020000200002000020000200002000020000200002000020000200002000020000200002000020000200002000020000200002000020000200002000020000200002000020000200
