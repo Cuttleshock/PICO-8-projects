@@ -291,6 +291,7 @@ function init_battle()
 	make_unit(7,5,FACTION_RED,slime_base)
 	make_unit(4,6,FACTION_RED,skel_base)
 	make_unit(6,6,FACTION_RED,cata_base)
+	make_unit(6,7,FACTION_RED,cart_base)
 	make_unit(5,4,FACTION_BLUE,slime_base)
 	make_unit(4,4,FACTION_BLUE,skel_base)
 	make_unit(8,3,FACTION_GREEN,slime_base)
@@ -552,7 +553,7 @@ function get_attack_range(unit,x,y)
 end
 
 function list_targets_from(unit,x,y)
-	if (unit.ranged and (x!=unit.x or y!=unit.y)) return {}
+	if (not unit.atk or (unit.ranged and (x!=unit.x or y!=unit.y))) return {}
 
 	local locations=get_attack_range(unit,x,y)
 	local ret={}
@@ -603,7 +604,7 @@ function attack(attacker, defender)
 		(function()
 			targets={}
 			defender.hp-=calc_damage(attacker,defender)
-			if not attacker.ranged and not defender.ranged and defender.hp>0 then
+			if not attacker.ranged and not defender.ranged and defender.atk and defender.hp>0 then
 				attacker.hp-=calc_damage(defender, attacker)
 				if (attacker.hp<=0) delete_unit(attacker)
 			elseif defender.hp<=0 then
