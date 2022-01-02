@@ -973,6 +973,29 @@ function on_screen()
 	return true
 end
 
+function draw_map()
+	if fog then
+		cls(13)
+		-- greyscale - taken from PICO docs
+		pal({1,1,5,5,5,6,7,13,6,7,7,6,13,6,7,1})
+		map()
+		pal()
+		for x=flr(cam_x),ceil(cam_x+7) do
+			for y=flr(cam_y),ceil(cam_y+7) do
+				local s=visible[xy2n(x,y)]
+				if s then
+					local x0,y0=x*k_tilesize,y*k_tilesize
+					rectfill(x0,y0,x0+k_tilesize-1,y0+k_tilesize-1,3) -- grassy green
+					spr(s,x*k_tilesize,y*k_tilesize,2,2)
+				end
+			end
+		end
+	else
+		cls(3)
+		map()
+	end
+end
+
 function draw_properties()
 	for n,f in pairs(properties) do
 		local x,y=n2xy(n)
@@ -1202,12 +1225,11 @@ function _update()
 end
 
 function _draw()
-	cls(3)
-	camera(cam_x*k_tilesize,cam_y*k_tilesize)
-	map()
 	if game_state==STATE_G_MAIN_MENU then
 		cls(5)
 	elseif game_state==STATE_G_BATTLE then
+		camera(cam_x*k_tilesize,cam_y*k_tilesize)
+		draw_map()
 		draw_properties()
 		draw_highlight()
 		draw_path()
