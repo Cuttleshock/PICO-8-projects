@@ -18,6 +18,10 @@ k_timermax = 2*3*2*5*7*2*3
 STATE_G_MAIN_MENU=1
 STATE_G_BATTLE=2
 
+-- TARGET_NONE ? see todo about resetting [targets]
+TARGET_ATTACK=101
+TARGET_UNLOAD=102
+
 FACTION_RED=1001
 FACTION_BLUE=1002
 FACTION_GREEN=1003
@@ -256,6 +260,7 @@ pointer={}
 highlight={}
 path={ cost=0 }
 targets={}
+target_type=TARGET_ATTACK
 battle_factions={}
 faction_funds={}
 active_faction=0
@@ -584,6 +589,7 @@ end
 
 function target_highlighted_unit()
 	targets=list_targets_from(highlight.unit,pointer.x,pointer.y)
+	target_type=TARGET_ATTACK
 	pointer.x,pointer.y=n2xy(next(targets))
 end
 
@@ -596,7 +602,16 @@ function control_targets()
 	elseif btnp(🅾️) then
 		local unit = highlight.unit -- need reference after highlight cleared
 		pointer.x,pointer.y=n2xy(path[#path] or xy2n(unit.x,unit.y)) -- if attacked from standing position
-		move_highlighted_unit(function() attack(unit, targets[n]) end)
+		local cb=noop
+		if target_type==TARGET_ATTACK then
+			cb=(function() attack(unit, targets[n]) end)
+		elseif target_type==TARGET_UNLOAD then
+			cb=(function()
+				unload(unit,targets[n],n2xy(n))
+			end)
+		end
+		move_highlighted_unit(cb)
+		-- todo - should clear targets here, not inside attack()/unload()
 	elseif btnp(❎) then
 		targets={}
 		pointer.x,pointer.y=n2xy(path[#path] or xy2n(highlight.unit.x,highlight.unit.y))
@@ -658,6 +673,12 @@ function capture(unit)
 	)
 end
 
+function target_unload_highlighted_unit(locations)
+	targets=locations
+	target_type=TARGET_UNLOAD
+	pointer.x,pointer.y=n2xy(next(targets))
+end
+
 function make_unload_menuitem(unit)
 	local locations=list_unload_from(unit,pointer.x,pointer.y)
 
@@ -672,6 +693,38 @@ function can_unload_from(unit,x,y)
 	-- unit must be able to load, and it must be on a valid unload spot -
 	-- heuristically, a standable spot for the first loadable movetype.
 	return unit.carries and terrain_cost[fget(mget(x*2,y*2))][next(unit.carries)]
+end
+
+-- unit is the one being unloaded
+function list_unload_from(unit,x,y)
+	local locations=get_attack_range(slime_base,x,y)
+	for n in pairs(locations) do
+		locations[n]=(get_mvmt(unit,n2xy(n))==0xff and nil or unit)
+	end
+	-- don't allow to drop on other units
+	for u in all(units) do
+		if (u!=highlight.unit and locations[xy2n(u.x,u.y)]) locations[xy2n(u.x,u.y)]=nil
+	end
+	return locations
+end
+
+function unload(u1,u2,x,y)
+	start_animation(
+		animate_unload_frame,
+		(function()
+			del(u1.carrying,u2)
+			local u_new=make_unit(x,y,u2.faction,u2.base) -- todo: can we pass u2 itself as a base?
+			u_new.moved=true
+			u_new.hp=u2.hp
+			u1.moved=false
+			targets={}
+			highlight={unit=u1} -- the fact that this is necessary is such a red flag
+			-- consider AWDS carrier: it would erroneously be
+			-- able to attack in the following menu. TODO.
+			open_action_menu(true)
+		end),
+		u1,u2,x,y,0
+	)
 end
 
 function load_highlighted_unit(carrier)
@@ -794,7 +847,7 @@ function update_path()
 	if not highlight.unit then
 		path={ cost=0 }
 		return
-	elseif not highlight[n] then
+	elseif not highlight[n] or next(targets) then
 		return
 	end
 
@@ -967,13 +1020,16 @@ end
 
 function draw_pointer()
 	draw_actor(pointer)
-	local u=targets[xy2n(pointer.x,pointer.y)]
-	if u then
-		local dmg,x0,y0=calc_damage(highlight.unit,u,true),pointer.x*k_tilesize+12,pointer.y*k_tilesize-6
-		rect(x0,y0,x0+18,y0+8,0) -- black
-		rectfill(x0+1,y0+1,x0+17,y0+7,7) -- white
-		print(tostr(dmg)..'%',x0+2*(4-#tostr(dmg)),y0+2,0)
+	if target_type==TARGET_ATTACK then
+		local u=targets[xy2n(pointer.x,pointer.y)]
+		if u then
+			local dmg,x0,y0=calc_damage(highlight.unit,u,true),pointer.x*k_tilesize+12,pointer.y*k_tilesize-6
+			rect(x0,y0,x0+18,y0+8,0) -- black
+			rectfill(x0+1,y0+1,x0+17,y0+7,7) -- white
+			print(tostr(dmg)..'%',x0+2*(4-#tostr(dmg)),y0+2,0)
+		end
 	end
+	-- todo: if TARGET_UNLOAD, then draw_actor({...next(targets),pointer.x,pointer.y})
 end
 
 function draw_faction()
@@ -1014,6 +1070,10 @@ function animate_skirmish_frame(attacker,defender,frame)
 end
 
 function animate_property_capture_frame(unit,frame)
+	return true -- todo
+end
+
+function animate_unload_frame(u1,u2,x,y,frame)
 	return true -- todo
 end
 
