@@ -593,7 +593,7 @@ function move_unit(unit, path, cb)
 			for u in all(units) do
 				if u.invisible and u.faction!=highlight.unit.faction and xy2n(u.x,u.y)==path[i] then
 					trapped=true
-					cb=(function() hit_trap(unit) end)
+					cb=(function() hit_trap(unit,u) end)
 					break
 				end
 			end
@@ -610,7 +610,7 @@ function move_unit(unit, path, cb)
 	start_animation(
 		animate_unit_move_frame,
 		(function()
-			unit.invisible,unit.x,unit.y=false,n2xy(path[#path])
+			unit.invisible,unit.x,unit.y=false,n2xy(path[#path] or xy2n(unit.x,unit.y))
 			cb()
 		end),
 		unit,path,0
@@ -781,22 +781,34 @@ function list_unload_from(unit,x,y)
 end
 
 function unload(u1,u2,x,y)
-	start_animation(
-		animate_unload_frame,
-		(function()
-			del(u1.carrying,u2)
-			local u_new=make_unit(x,y,u2.faction,u2.base) -- todo: can we pass u2 itself as a base?
-			u_new.moved=true
-			u_new.hp=u2.hp
-			u1.moved=false
-			targets={}
-			highlight={unit=u1} -- the fact that this is necessary is such a red flag
-			-- consider AWDS carrier: it would erroneously be
-			-- able to attack in the following menu. TODO.
-			open_action_menu(true)
-		end),
-		u1,u2,x,y,0
-	)
+	local trapper=nil
+	for u in all(units) do
+		if u.invisible and u.faction!=u1.faction and u.x==x and u.y==y then
+			trapper=u
+			break
+		end
+	end
+
+	if trapper then
+		hit_trap(u1,trapper)
+	else
+		start_animation(
+			animate_unload_frame,
+			(function()
+				del(u1.carrying,u2)
+				local u_new=make_unit(x,y,u2.faction,u2.base) -- todo: can we pass u2 itself as a base?
+				u_new.moved=true
+				u_new.hp=u2.hp
+				u1.moved=false
+				targets={}
+				highlight={unit=u1} -- the fact that this is necessary is such a red flag
+				-- consider AWDS carrier: it would erroneously be
+				-- able to attack in the following menu. TODO.
+				open_action_menu(true)
+			end),
+			u1,u2,x,y,0
+		)
+	end
 end
 
 function load_highlighted_unit(carrier)
