@@ -380,6 +380,10 @@ function update_visible()
 			end
 		end
 	end
+	-- second pass to render enemy units invisible
+	for u in all(units) do
+		u.invisible=(not visible[xy2n(u.x,u.y)])
+	end
 end
 
 function get_mvmt(unit,x,y)
@@ -402,7 +406,7 @@ function highlight_range(u)
 	highlight[xy2n(u.x,u.y)] = xy2n(0xff,0xff,0)
 	local enemy_tiles={}
 	for u1 in all(units) do
-		if (u1.faction!=u.faction) enemy_tiles[xy2n(u1.x,u1.y)]=true
+		if (u1.faction!=u.faction and not u1.invisible) enemy_tiles[xy2n(u1.x,u1.y)]=true
 	end
 	-- depth-first search
 	while search[1] do
@@ -611,7 +615,7 @@ function list_targets_from(unit,x,y)
 	local locations=get_attack_range(unit,x,y)
 	local ret={}
 	for u in all(units) do
-		if (u.faction!=unit.faction and locations[xy2n(u.x,u.y)]) ret[xy2n(u.x,u.y)]=u
+		if (not u.invisible and u.faction!=unit.faction and locations[xy2n(u.x,u.y)]) ret[xy2n(u.x,u.y)]=u
 	end
 	return ret
 end
@@ -732,7 +736,7 @@ function list_unload_from(unit,x,y)
 	end
 	-- don't allow to drop on other units
 	for u in all(units) do
-		if (u!=highlight.unit and locations[xy2n(u.x,u.y)]) locations[xy2n(u.x,u.y)]=nil
+		if (not u.invisible and u!=highlight.unit and locations[xy2n(u.x,u.y)]) locations[xy2n(u.x,u.y)]=nil
 	end
 	return locations
 end
@@ -780,7 +784,7 @@ function control_battle()
 			sfx(2)
 			local unit = nil
 			for u in all(units) do
-				if u.x==pointer.x and u.y==pointer.y then
+				if u.x==pointer.x and u.y==pointer.y and not u.invisible then
 					unit = u
 					break
 				end
