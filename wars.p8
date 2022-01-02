@@ -733,10 +733,8 @@ function capture(unit)
 			mset(unit.x*2+1,unit.y*2+1,SPRITE_CITY+17)
 			cb=(function() clear_faction(old_faction) end)
 		end
-		-- we could shortcut by just setting (x,y) visible, but this works with
-		-- the move() cb lifecycle
-		update_visible()
 	end
+	update_visible()
 
 	start_animation(
 		animate_property_capture_frame,
