@@ -1109,21 +1109,21 @@ end
 function draw_actor(a)
 	if (a.invisible or not on_screen(a.x,a.y)) return
 
-	local frame = timer%(a.frames*k_animspeed)\k_animspeed
+	local x0,y0,frame = a.x*k_tilesize,a.y*k_tilesize,timer%(a.frames*k_animspeed)\k_animspeed
 	pal(8,a.moved and 5 or faction_colours[a.faction]) -- dark grey or faction
-	spr(a.spr+2*frame,a.x*k_tilesize,a.y*k_tilesize,2,2)
+	spr(a.spr+2*frame,x0,y0,2,2)
 	pal()
 
 	if a.carries then
 		if fog and a.faction!=battle_factions[active_faction] then
-			print('\#0?',a.x*k_tilesize,(a.y+1)*k_tilesize-5,7)
+			print('\#0?',x0,y0+11,7)
 		elseif #a.carrying>0 then
-			print('\#0c',a.x*k_tilesize,(a.y+1)*k_tilesize-5,7)
+			print('\#0c',x0,y0+11,7)
 			if xy2n(pointer.x,pointer.y)==xy2n(a.x,a.y) then
-				local x0,y0,y1=(a.x-(#a.carrying-1)/2)*k_tilesize,(a.y-1)*k_tilesize,a.y*k_tilesize-1
+				local xc0,yc0,yc1=(a.x-(#a.carrying-1)/2)*k_tilesize,(a.y-1)*k_tilesize,a.y*k_tilesize-1
 				for i=1,#a.carrying do
-					rect(x0+k_tilesize*(i-1),y0,x0+k_tilesize*i-1,y1,7) -- white
-					spr(a.carrying[i].spr,x0+k_tilesize*(i-1),y0,2,2)
+					rect(xc0+k_tilesize*(i-1),yc0,xc0+k_tilesize*i-1,yc1,7) -- white
+					spr(a.carrying[i].spr,xc0+k_tilesize*(i-1),yc0,2,2)
 				end
 			end
 		end
@@ -1131,16 +1131,11 @@ function draw_actor(a)
 
 	local display_hp=ceil(a.hp*10/k_max_unit_hp)
 	if display_hp<10 then
-		local x1,y1=(a.x+1)*k_tilesize-1,(a.y+1)*k_tilesize-1
-		rectfill(x1-4,y1-6,x1,y1,0) -- black
-		print(display_hp,x1-3,y1-5,7) -- white
+		print('\#0'..display_hp,x0+12,y0+10,7) -- white on black
 	end
 
 	if a.capture_count then
-		local x0,y0=a.x*k_tilesize,a.y*k_tilesize
-		local x1 = a.capture_count>=10 and x0+8 or x0+4
-		rectfill(x0,y0,x1,y0+6,0) -- black
-		print(a.capture_count,x0+1,y0+1,5) -- olive
+		print('\#0'..a.capture_count,x0+1,y0+1,5) -- olive on black
 	end
 end
 
@@ -1239,7 +1234,7 @@ function animate_property_capture_frame(unit,capture_start,capture_end,frame)
 	else
 		-- draw a steadily dropping bar
 		-- dangerous mutation of unit - ensure that this is set correctly by the caller
-		unit.capture_count=capture_mid
+		unit.capture_count=ceil(capture_mid)
 		local pf=properties[xy2n(unit.x,unit.y)]
 		if (pf) colour=faction_colours[pf]
 	end
