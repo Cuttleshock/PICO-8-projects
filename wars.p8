@@ -1215,15 +1215,26 @@ end
 
 function animate_property_capture_frame(unit,capture_start,capture_end,frame)
 	if (frame==10) sfx(5,3,0,12)
+	if (capture_end<=0 and frame==34) sfx(6)
 
 	local frame_effective=min(max(frame-5,0),20)
 	local capture_mid=(frame_effective*capture_end+(20-frame_effective)*capture_start)/20
-	-- dangerous mutation of unit - ensure that this is set correctly by the caller
-	unit.capture_count=capture_mid
+	local colour=15 -- peach
+	if frame>=34 then
+		-- draw a quickly rising faction-coloured bar
+		colour=faction_colours[unit.faction]
+		capture_mid=min(2*(frame-30),20)
+	else
+		-- draw a steadily dropping bar
+		-- dangerous mutation of unit - ensure that this is set correctly by the caller
+		unit.capture_count=capture_mid
+		local pf=properties[xy2n(unit.x,unit.y)]
+		if (pf) colour=faction_colours[pf]
+	end
 	local x0,y0=unit.x*k_tilesize-4,(unit.y+1)*k_tilesize
-	rectfill(x0,y0,x0+3,y0-capture_mid,15) -- peach
+	rectfill(x0,y0,x0+3,y0-capture_mid,colour)
 
-	return frame>=35,unit,capture_start,capture_end,frame+1
+	return (capture_end>0 and frame==29 or frame==48),unit,capture_start,capture_end,frame+1
 end
 
 function animate_unload_frame(u1,u2,x,y,frame)
@@ -1442,3 +1453,4 @@ __sfx__
 000800002113021100001000010000100001000010000100001000010000100001000010000100001000010000100001000010000100001000010000100001000010000100001000010000100001000010000100
 000c0000192201f220002000020000200002000020000200002000020000200002000020000200002000020000200002000020000200002000020000200002000020000200002000020000200002000020000200
 000800041a1300e1300213000100001000010000100001001a1000e10002100001000010000100001000010000100001000010000100001000010000100001000010000100001000010000100001000010000100
+000800000e13012130151301a13000100001000010000100001000010000100001000010000100001000010000100001000010000100001000010000100001000010000100001000010000100001000010000100
