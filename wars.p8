@@ -277,7 +277,9 @@ cam_x=0
 cam_y=0
 
 function init_main_menu()
-	push_menu(main_menu,40,20,48,true)
+	cam_x,cam_y=0,0
+	camera()
+	push_menu(main_menu,40,50,48,true)
 end
 
 function init_battle()
@@ -1352,6 +1354,7 @@ end
 function _draw()
 	if game_state==STATE_G_MAIN_MENU then
 		cls(5)
+		print('\#0\^w\^t \f8w\fca\fbr\fas ',41,30)
 	elseif game_state==STATE_G_BATTLE then
 		camera(cam_x*k_tilesize,cam_y*k_tilesize)
 		draw_map()
