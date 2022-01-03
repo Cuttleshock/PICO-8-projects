@@ -283,6 +283,8 @@ end
 
 function init_battle()
 	start_animation(truthy_noop, noop)
+	fog=true
+	visible={}
 	units={}
 	properties={
 		[xy2n(7,2)]=FACTION_RED,
@@ -314,8 +316,6 @@ function init_battle()
 	make_unit(4,8,FACTION_YELLOW,skel_base)
 	highlight={}
 	path={ cost=0 }
-	visible={}
-	fog=true
 	map_w=16
 	map_h=16
 	end_turn()
