@@ -1103,6 +1103,21 @@ function draw_actor(a)
 	spr(a.spr+2*frame,a.x*k_tilesize,a.y*k_tilesize,2,2)
 	pal()
 
+	if a.carries then
+		if fog and a.faction!=battle_factions[active_faction] then
+			print('\#0?',a.x*k_tilesize,(a.y+1)*k_tilesize-5,7)
+		elseif #a.carrying>0 then
+			print('\#0c',a.x*k_tilesize,(a.y+1)*k_tilesize-5,7)
+			if xy2n(pointer.x,pointer.y)==xy2n(a.x,a.y) then
+				local x0,y0,y1=(a.x-(#a.carrying-1)/2)*k_tilesize,(a.y-1)*k_tilesize,a.y*k_tilesize
+				for i=1,#a.carrying do
+					rect(x0+k_tilesize*(i-1),y0,x0+k_tilesize*i,y1,7) -- white
+					spr(a.carrying[i].spr,x0+k_tilesize*(i-1),y0,2,2)
+				end
+			end
+		end
+	end
+
 	if a.hp then
 		local display_hp=ceil(a.hp*10/k_max_unit_hp)
 		if display_hp<10 then
