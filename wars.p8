@@ -1040,8 +1040,8 @@ end
 -->8
 -- draw methods
 
-function on_screen()
-	return true
+function on_screen(x,y)
+	return ceil(x)>cam_x and flr(x)<cam_x+128 and ceil(y)>cam_y and flr(y)<cam_y+128
 end
 
 function draw_map()
@@ -1057,7 +1057,7 @@ function draw_map()
 				if s then
 					local x0,y0=x*k_tilesize,y*k_tilesize
 					rectfill(x0,y0,x0+k_tilesize-1,y0+k_tilesize-1,3) -- grassy green
-					spr(s,x*k_tilesize,y*k_tilesize,2,2)
+					spr(s,x0,y0,2,2)
 				end
 			end
 		end
