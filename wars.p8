@@ -365,6 +365,8 @@ function n2xy(n)
 end
 
 function update_visible()
+	if (not fog) return
+
 	local faction=battle_factions[active_faction]
 	visible={}
 	for p,f in pairs(properties) do
