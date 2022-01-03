@@ -204,14 +204,12 @@ function truthy_noop() return true end
 
 main_menu = {
 	{ text='battle', cb=(function () push_game_state(STATE_G_BATTLE, init_battle) end) },
-	{ text='nothing', cb=noop, stay=true },
-	{ text='disabled', cb=noop, disabled=true },
+	{ text='load map', cb=noop, disabled=true },
 	sticky=true,
 }
 
 battle_menu = {
-	{ text='nope', cb=noop, stay=true },
-	{ text='cool stats', cb=noop, stay=true },
+	{ text='do nothing', cb=noop, disabled=true },
 	{ text='exit to menu', cb=(function () push_game_state(STATE_G_MAIN_MENU, init_main_menu) end) },
 	{ text='end turn', cb=(function () end_turn() end) },
 }
