@@ -1094,9 +1094,13 @@ function draw_highlight(h)
 end
 
 function draw_path()
+	if (not highlight.unit) return
+
+	local x0,y0=highlight.unit.x,highlight.unit.y
 	for n in all(path) do
-		local x,y=n2xy(n)
-		rectfill(x*16+5,y*16+5,x*16+10,y*16+10)
+		local x1,y1=n2xy(n)
+		rectfill(min(x0,x1)*k_tilesize+5,min(y0,y1)*k_tilesize+5,max(x0,x1)*k_tilesize+10,max(y0,y1)*k_tilesize+10,7) -- white
+		x0,y0=x1,y1
 	end
 end
 
