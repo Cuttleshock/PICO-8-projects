@@ -1080,17 +1080,16 @@ function draw_properties()
 end
 
 function draw_highlight(h)
-	local sprite = 16*(((timer%30)\10)+1)
+	local timing=(timer%40)\10
+	fillp((0b1110110110110111.111011011011<<timing*4)&0xffff|0b0.1)
 	local x,y
 	for n,_ in pairs(h or highlight) do
 		if type(n)!='string' then
 			x,y=n2xy(n)
-			spr(sprite,x*k_tilesize,y*k_tilesize)
-			spr(sprite,(x+0.5)*k_tilesize,y*k_tilesize)
-			spr(sprite,x*k_tilesize,(y+0.5)*k_tilesize)
-			spr(sprite,(x+0.5)*k_tilesize,(y+0.5)*k_tilesize)
+			rectfill(x*k_tilesize,y*k_tilesize,(x+1)*k_tilesize-1,(y+1)*k_tilesize-1,12)
 		end
 	end
+	fillp(0)
 end
 
 function draw_path()
