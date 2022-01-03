@@ -11,6 +11,7 @@ k_city_heal = 20
 k_city_income = 10
 k_max_funds = 9990
 k_capture_max = 20
+k_mountain_vision = 5 -- how far a unit standing on a mountain sees
 -- divides 1~10, 12, 14, 15:
 k_timermax = 2*3*2*5*7*2*3
 
@@ -191,10 +192,10 @@ cart_base = {
 }
 
 land_units = {
-	skel_base,
-	cart_base,
-	slime_base,
-	cata_base,
+	[skel_base]=true,
+	[cart_base]=true,
+	[slime_base]=true,
+	[cata_base]=true,
 }
 
 -- menus
@@ -377,7 +378,9 @@ function update_visible()
 	end
 	for u in all(units) do
 		if u.faction==faction then
-			local vision_range=get_attack_range(u,u.x,u.y,0,u.vision)
+			local vision=u.vision
+			if (fget(mget(u.x*2,u.y*2))==TERRAIN_MOUNTAIN and land_units[u.base]) vision=k_mountain_vision
+			local vision_range=get_attack_range(u,u.x,u.y,0,vision)
 			for r in pairs(vision_range) do
 				local x,y=n2xy(r)
 				visible[r]=mget(x*2,y*2)
@@ -466,7 +469,7 @@ end
 
 function make_factory_menu()
 	local ret={}
-	for u in all(land_units) do
+	for u in pairs(land_units) do
 		local text=(u.name..' g'..tostr(u.cost)..'0')
 		if faction_funds[battle_factions[active_faction]]>=u.cost then
 			add(ret,{
