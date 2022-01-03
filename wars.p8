@@ -1118,9 +1118,9 @@ function draw_actor(a)
 		elseif #a.carrying>0 then
 			print('\#0c',a.x*k_tilesize,(a.y+1)*k_tilesize-5,7)
 			if xy2n(pointer.x,pointer.y)==xy2n(a.x,a.y) then
-				local x0,y0,y1=(a.x-(#a.carrying-1)/2)*k_tilesize,(a.y-1)*k_tilesize,a.y*k_tilesize
+				local x0,y0,y1=(a.x-(#a.carrying-1)/2)*k_tilesize,(a.y-1)*k_tilesize,a.y*k_tilesize-1
 				for i=1,#a.carrying do
-					rect(x0+k_tilesize*(i-1),y0,x0+k_tilesize*i,y1,7) -- white
+					rect(x0+k_tilesize*(i-1),y0,x0+k_tilesize*i-1,y1,7) -- white
 					spr(a.carrying[i].spr,x0+k_tilesize*(i-1),y0,2,2)
 				end
 			end
