@@ -436,6 +436,12 @@ end
 function end_turn(cb)
 	active_faction=active_faction%#battle_factions + 1
 	if (active_faction==1) battle_turn+=1
+	if fog then
+		local tmp=active_faction
+		active_faction=0
+		update_visible()
+		active_faction=tmp
+	end
 	start_animation(
 		animate_end_turn_frame,
 		(function()
@@ -1195,12 +1201,6 @@ function draw_menu()
 end
 
 function animate_end_turn_frame(frame)
-	if frame==0 and fog then
-		local tmp=active_faction
-		active_faction=0
-		update_visible()
-		active_faction=tmp
-	end
 	local x0,y0=cam_x*k_tilesize+64,cam_y*k_tilesize+64
 	rectfill(x0-4*min(frame,16),y0-20,x0+4*min(frame,16),y0+19,faction_colours[battle_factions[active_faction]])
 	if (frame>=6) print('\^w\^tday '..battle_turn,x0-24,y0-5,7) -- white
