@@ -436,20 +436,26 @@ end
 function end_turn(cb)
 	active_faction=active_faction%#battle_factions + 1
 	if (active_faction==1) battle_turn+=1
-	for u in all(units) do
-		u.moved=false
-		if u.faction==battle_factions[active_faction] and u.faction==properties[xy2n(u.x,u.y)] then
-			u.hp = min(u.hp+k_city_heal, k_max_unit_hp)
-		end
-	end
-	for n,f in pairs(properties) do
-		if f==battle_factions[active_faction] then
-			local newfunds=faction_funds[battle_factions[active_faction]]+k_city_income
-			faction_funds[battle_factions[active_faction]]=min(newfunds,k_max_funds)
-		end
-	end
-	update_visible()
-	start_animation(truthy_noop, cb or noop)
+	start_animation(
+		animate_end_turn_frame,
+		(function()
+			for u in all(units) do
+				u.moved=false
+				if u.faction==battle_factions[active_faction] and u.faction==properties[xy2n(u.x,u.y)] then
+					u.hp = min(u.hp+k_city_heal, k_max_unit_hp)
+				end
+			end
+			for n,f in pairs(properties) do
+				if f==battle_factions[active_faction] then
+					local newfunds=faction_funds[battle_factions[active_faction]]+k_city_income
+					faction_funds[battle_factions[active_faction]]=min(newfunds,k_max_funds)
+				end
+			end
+			update_visible()
+			if (cb) cb()
+		end),
+		0
+	)
 end
 
 function make_factory_menu()
@@ -1171,6 +1177,19 @@ function draw_menu()
 			print(menu.ref[i].text,x+3,y-4+i*8,7) -- white
 		end
 	end
+end
+
+function animate_end_turn_frame(frame)
+	if frame==0 and fog then
+		local tmp=active_faction
+		active_faction=0
+		update_visible()
+		active_faction=tmp
+	end
+	local x0,y0=cam_x*k_tilesize+64,cam_y*k_tilesize+64
+	rectfill(x0-4*min(frame,16),y0-20,x0+4*min(frame,16),y0+19,faction_colours[battle_factions[active_faction]])
+	if (frame>=6) print('\^w\^tday '..battle_turn,x0-24,y0-5,7) -- white
+	return false,frame+1
 end
 
 function animate_skirmish_frame(attacker,defender,frame)
