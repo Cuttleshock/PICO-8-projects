@@ -628,7 +628,7 @@ function move_unit(unit, path, cb)
 			unit.invisible,unit.x,unit.y=false,n2xy(path[#path] or xy2n(unit.x,unit.y))
 			cb()
 		end),
-		unit,path,0
+		unit,false,path,0
 	)
 end
 
@@ -1261,7 +1261,7 @@ function animate_hit_trap_frame(trapped,trapper,frame)
 	return frame>=10,trapped,trapper,frame+1
 end
 
-function animate_unit_move_frame(unit,path,frame)
+function animate_unit_move_frame(unit,flip,path,frame)
 	local n=(frame\4)
 	local k=(frame%4)/4
 
@@ -1271,12 +1271,13 @@ function animate_unit_move_frame(unit,path,frame)
 	local x2,y2=n2xy(path[n+1])
 	local x=k*x2+(1-k)*x1
 	local y=k*y2+(1-k)*y1
+	flip=(flip or (x2<x1)) and not (x2>x1)
 
 	pal(8,faction_colours[unit.faction])
-	spr(unit.spr,x*k_tilesize,y*k_tilesize,2,2)
+	spr(unit.spr,x*k_tilesize,y*k_tilesize,2,2,flip)
 	pal()
 
-	return (n>=#path),unit,path,frame+1
+	return (n>=#path),unit,flip,path,frame+1
 end
 
 function animate_battle_end_frame(faction, frame)
