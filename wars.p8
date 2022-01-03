@@ -734,27 +734,29 @@ function attack(attacker, defender)
 end
 
 function capture(unit)
-	if (not unit.capture_count) unit.capture_count=k_capture_max
-	unit.capture_count-=ceil(unit.hp*10/k_max_unit_hp)
-	local cb,old_faction=noop,properties[xy2n(unit.x,unit.y)]
-
-	if unit.capture_count<=0 then
-		properties[xy2n(unit.x,unit.y)]=unit.faction
-		unit.capture_count=nil
-		if fget(mget(unit.x*2,unit.y*2))==TERRAIN_HQ then
-			mset(unit.x*2,unit.y*2,SPRITE_CITY)
-			mset(unit.x*2+1,unit.y*2,SPRITE_CITY+1)
-			mset(unit.x*2,unit.y*2+1,SPRITE_CITY+16)
-			mset(unit.x*2+1,unit.y*2+1,SPRITE_CITY+17)
-			cb=(function() clear_faction(old_faction) end)
-		end
-	end
 	update_visible()
-
+	if (not unit.capture_count) unit.capture_count=k_capture_max
+	local new_capture_count=max(unit.capture_count-ceil(unit.hp*10/k_max_unit_hp),0)
 	start_animation(
 		animate_property_capture_frame,
-		cb,
-		unit,0
+		(function()
+			sfx(-2,3)
+			unit.capture_count=new_capture_count
+			local old_faction=properties[xy2n(unit.x,unit.y)]
+
+			if unit.capture_count<=0 then
+				properties[xy2n(unit.x,unit.y)]=unit.faction
+				unit.capture_count=nil
+				if fget(mget(unit.x*2,unit.y*2))==TERRAIN_HQ then
+					mset(unit.x*2,unit.y*2,SPRITE_CITY)
+					mset(unit.x*2+1,unit.y*2,SPRITE_CITY+1)
+					mset(unit.x*2,unit.y*2+1,SPRITE_CITY+16)
+					mset(unit.x*2+1,unit.y*2+1,SPRITE_CITY+17)
+					clear_faction(old_faction)
+				end
+			end
+		end),
+		unit,unit.capture_count,new_capture_count,0
 	)
 end
 
@@ -1211,8 +1213,17 @@ function animate_skirmish_frame(attacker,defender,frame)
 	return true -- todo
 end
 
-function animate_property_capture_frame(unit,frame)
-	return true -- todo
+function animate_property_capture_frame(unit,capture_start,capture_end,frame)
+	if (frame==10) sfx(5,3,0,12)
+
+	local frame_effective=min(max(frame-5,0),20)
+	local capture_mid=(frame_effective*capture_end+(20-frame_effective)*capture_start)/20
+	-- dangerous mutation of unit - ensure that this is set correctly by the caller
+	unit.capture_count=capture_mid
+	local x0,y0=unit.x*k_tilesize-4,(unit.y+1)*k_tilesize
+	rectfill(x0,y0,x0+3,y0-capture_mid,15) -- peach
+
+	return frame>=35,unit,capture_start,capture_end,frame+1
 end
 
 function animate_unload_frame(u1,u2,x,y,frame)
@@ -1430,3 +1441,4 @@ __sfx__
 000600001d05020050210002200000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
 000800002113021100001000010000100001000010000100001000010000100001000010000100001000010000100001000010000100001000010000100001000010000100001000010000100001000010000100
 000c0000192201f220002000020000200002000020000200002000020000200002000020000200002000020000200002000020000200002000020000200002000020000200002000020000200002000020000200
+000800041a1300e1300213000100001000010000100001001a1000e10002100001000010000100001000010000100001000010000100001000010000100001000010000100001000010000100001000010000100
