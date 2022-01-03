@@ -1110,11 +1110,7 @@ function draw_actor(a)
 	if (a.invisible or not on_screen(a.x,a.y)) return
 
 	local frame = timer%(a.frames*k_animspeed)\k_animspeed
-	if a.moved then
-		pal(8,5) -- grimy olive brown
-	elseif a.faction then
-		pal(8,faction_colours[a.faction])
-	end
+	pal(8,a.moved and 5 or faction_colours[a.faction]) -- dark grey or faction
 	spr(a.spr+2*frame,a.x*k_tilesize,a.y*k_tilesize,2,2)
 	pal()
 
@@ -1133,13 +1129,11 @@ function draw_actor(a)
 		end
 	end
 
-	if a.hp then
-		local display_hp=ceil(a.hp*10/k_max_unit_hp)
-		if display_hp<10 then
-			local x1,y1=(a.x+1)*k_tilesize-1,(a.y+1)*k_tilesize-1
-			rectfill(x1-4,y1-6,x1,y1,0) -- black
-			print(display_hp,x1-3,y1-5,7) -- white
-		end
+	local display_hp=ceil(a.hp*10/k_max_unit_hp)
+	if display_hp<10 then
+		local x1,y1=(a.x+1)*k_tilesize-1,(a.y+1)*k_tilesize-1
+		rectfill(x1-4,y1-6,x1,y1,0) -- black
+		print(display_hp,x1-3,y1-5,7) -- white
 	end
 
 	if a.capture_count then
