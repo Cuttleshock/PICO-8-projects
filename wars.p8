@@ -1044,7 +1044,7 @@ end
 -- draw methods
 
 function on_screen(x,y)
-	return ceil(x)>cam_x and flr(x)<cam_x+128 and ceil(y)>cam_y and flr(y)<cam_y+128
+	return ceil(x)>=cam_x and flr(x)<cam_x+128 and ceil(y)>=cam_y and flr(y)<cam_y+128
 end
 
 function draw_map()
