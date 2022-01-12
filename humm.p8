@@ -208,10 +208,18 @@ function updatenpcs()
 	end
 end
 
+function anyflowers()
+	for n in all(npcs) do
+		if (n.name=='flw') return true
+	end
+	return false
+end
+
 function spawnnpc()
 	if _lvl == 1 then
 		if (actorseed < 0.28
 		 or pc.juice < low_juice
+		 or not anyflowers()
 		) then
 			add(npcs,flower{
 			 y=scrntp+flr(rnd(scrnbt-scrntp-12)),
@@ -233,6 +241,7 @@ function spawnnpc()
 	elseif _lvl == 2 then
 		if (actorseed < 0.26
 		 or pc.juice < low_juice
+		 or not anyflowers()
 		) then
 			add(npcs,flower{
 			 y=scrntp+flr(rnd(scrnbt-scrntp-12)),
@@ -259,6 +268,7 @@ function spawnnpc()
 	elseif _lvl == 3 then
 		if (actorseed < 0.24
 		 or pc.juice < low_juice
+		 or not anyflowers()
 		) then
 			add(npcs,flower{
 			 y=scrntp+flr(rnd(scrnbt-scrntp-12)),
@@ -288,6 +298,7 @@ function spawnnpc()
 	elseif _lvl == 4 then
 		if (actorseed < 0.22
 		 or pc.juice < low_juice
+		 or not anyflowers()
 		) then
 			add(npcs,flower{
 			 y=scrntp+flr(rnd(scrnbt-scrntp-12)),
@@ -339,6 +350,7 @@ function spawnnpc()
 			nsoverride = 50
 		elseif (actorseed < 0.2
 		 or pc.juice < low_juice
+		 or not anyflowers()
 		) then
 			local _yf=scrntp+flr(rnd(scrnbt-scrntp-12))
 			local _ys = _yf-(scrnbt-scrntp)/2
