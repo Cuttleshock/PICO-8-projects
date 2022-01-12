@@ -192,10 +192,10 @@ cart_base = {
 }
 
 land_units = {
-	[skel_base]=true,
-	[cart_base]=true,
-	[slime_base]=true,
-	[cata_base]=true,
+	skel_base,
+	cart_base,
+	slime_base,
+	cata_base,
 }
 
 -- menus
@@ -239,6 +239,12 @@ function last(t,k_curr)
 		k_last=k
 	end
 	return k_last,t[k_last]
+end
+
+function has(t,v1)
+	for _,v2 in pairs(t) do
+		if (v2==v1) return true
+	end
 end
 
 -->8
@@ -372,7 +378,7 @@ function update_visible()
 	for u in all(units) do
 		if u.faction==faction then
 			local vision=u.vision
-			if (fget(mget(u.x*2,u.y*2))==TERRAIN_MOUNTAIN and land_units[u.base]) vision=k_mountain_vision
+			if (fget(mget(u.x*2,u.y*2))==TERRAIN_MOUNTAIN and has(land_units,u.base)) vision=k_mountain_vision
 			local vision_range=get_attack_range(u,u.x,u.y,0,vision)
 			for r in pairs(vision_range) do
 				local x,y=n2xy(r)
@@ -462,7 +468,7 @@ end
 
 function make_factory_menu()
 	local ret={}
-	for u in pairs(land_units) do
+	for u in all(land_units) do
 		local text=(u.name..' g'..tostr(u.cost)..'0')
 		if faction_funds[battle_factions[active_faction]]>=u.cost then
 			add(ret,{
