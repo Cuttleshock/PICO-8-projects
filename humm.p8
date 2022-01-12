@@ -57,6 +57,7 @@ mns = { -- maxnextscores
 	55,
 	50,
 }
+low_juice = 120
 
 -- state
 nextspawn = 0
@@ -210,7 +211,7 @@ end
 function spawnnpc()
 	if _lvl == 1 then
 		if (actorseed < 0.28
-		 or pc.juice < 60
+		 or pc.juice < low_juice
 		) then
 			add(npcs,flower{
 			 y=scrntp+flr(rnd(scrnbt-scrntp-12)),
@@ -231,7 +232,7 @@ function spawnnpc()
 		end
 	elseif _lvl == 2 then
 		if (actorseed < 0.26
-		 or pc.juice < 60
+		 or pc.juice < low_juice
 		) then
 			add(npcs,flower{
 			 y=scrntp+flr(rnd(scrnbt-scrntp-12)),
@@ -257,7 +258,7 @@ function spawnnpc()
 		end
 	elseif _lvl == 3 then
 		if (actorseed < 0.24
-		 or pc.juice < 60
+		 or pc.juice < low_juice
 		) then
 			add(npcs,flower{
 			 y=scrntp+flr(rnd(scrnbt-scrntp-12)),
@@ -286,7 +287,7 @@ function spawnnpc()
 		end
 	elseif _lvl == 4 then
 		if (actorseed < 0.22
-		 or pc.juice < 60
+		 or pc.juice < low_juice
 		) then
 			add(npcs,flower{
 			 y=scrntp+flr(rnd(scrnbt-scrntp-12)),
@@ -337,7 +338,7 @@ function spawnnpc()
 			end
 			nsoverride = 50
 		elseif (actorseed < 0.2
-		 or pc.juice < 60
+		 or pc.juice < low_juice
 		) then
 			local _yf=scrntp+flr(rnd(scrnbt-scrntp-12))
 			local _ys = _yf-(scrnbt-scrntp)/2
