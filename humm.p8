@@ -388,8 +388,8 @@ local humm = actor:extend{
 	x=32,
 	y=64,
 	state='fly',--splode,drink...
-	friction=0.5,
-	impulse=1,
+	friction=0.6,
+	impulse=2.4,
 	juice=0,
 	sprites={
 	 	fly={1,1,2,2},
@@ -611,8 +611,6 @@ function _update()
 		if btnp(🅾️) or btnp(❎) then
 			signal('start',{
 			 humm={
-			  friction=0.8,
-			  impulse=2,
 			  juice=300,
 			 },
 			})
