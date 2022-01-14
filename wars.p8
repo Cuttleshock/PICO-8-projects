@@ -457,6 +457,10 @@ function end_turn(cb)
 				if f==battle_factions[active_faction] then
 					local newfunds=faction_funds[battle_factions[active_faction]]+k_city_income
 					faction_funds[battle_factions[active_faction]]=min(newfunds,k_max_funds)
+					local x,y=n2xy(n)
+					if fget(mget(x*2,y*2))==TERRAIN_HQ then
+						pointer.x,pointer.y=x,y
+					end
 				end
 			end
 			update_visible()
