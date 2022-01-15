@@ -779,6 +779,7 @@ function make_unload_menuitem(unit)
 	return {
 		text=unit.name..' '..tostr(ceil(unit.hp*10/k_max_unit_hp))..'/10',
 		cb=(function() target_unload_highlighted_unit(locations) end),
+		stay=true, -- prevent carrier from being 'reset' if unloading multiple units
 		disabled=(not next(locations)) -- disabled if no available spots
 	}
 end
@@ -848,10 +849,10 @@ function control_battle()
 		if btnp(🅾️) or btnp(❎) then
 			end_animation()
 		end
+	elseif next(targets) then -- if menu and targets both active, prioritise targets
+		return control_targets()
 	elseif next(menu_stack) then
 		return control_menu()
-	elseif next(targets) then
-		return control_targets()
 	else
 		if btnp(🅾️) then
 			sfx(2)
@@ -1369,7 +1370,7 @@ function _draw()
 		draw_pointer()
 		draw_faction()
 	end
-	draw_menu()
+	if (not next(targets)) draw_menu() -- if menu and targets both active, only draw targets
 	animate()
 	popd_()
 end
