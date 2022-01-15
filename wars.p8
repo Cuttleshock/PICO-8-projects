@@ -733,6 +733,7 @@ function attack(attacker, defender)
 	start_animation(
 		animate_skirmish_frame,
 		(function()
+			sfx(-2,3)
 			if (attacker.hp<=0) delete_unit(attacker)
 			if (defender.hp<=0) delete_unit(defender)
 		end),
@@ -1222,7 +1223,7 @@ function animate_skirmish_frame(attacker,defender,attacker_hit,frame)
 	spr(13,x*k_tilesize,y*k_tilesize,2,2,frame%10>5)
 
 	local done=(attacker_hit and frame==40) or (not attacker_hit and frame==20)
-	return done and (sfx(-2,3) or true),attacker,defender,attacker_hit,frame+1
+	return done,attacker,defender,attacker_hit,frame+1
 end
 
 function animate_property_capture_frame(unit,capture_start,capture_end,frame)
