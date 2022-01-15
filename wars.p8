@@ -1116,7 +1116,6 @@ function draw_actor(a)
 	local x0,y0,frame = a.x*k_tilesize,a.y*k_tilesize,timer%(a.frames*k_animspeed)\k_animspeed
 	pal(8,a.moved and 5 or faction_colours[a.faction]) -- dark grey or faction
 	spr(a.spr+2*frame,x0,y0,2,2)
-	pal()
 
 	if a.carries then
 		if fog and a.faction!=battle_factions[active_faction] then
@@ -1132,6 +1131,7 @@ function draw_actor(a)
 			end
 		end
 	end
+	pal()
 
 	local display_hp=ceil(a.hp*10/k_max_unit_hp)
 	if display_hp<10 then
