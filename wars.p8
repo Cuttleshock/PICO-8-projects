@@ -184,7 +184,6 @@ cart_base = {
 	vision=3,
 	carries={ [MOVE_SKEL]=true },
 	carry_max=2,
-	carrying={},
 	movetype=MOVE_WHEEL,
 	def=DEF_CART,
 	name='cart',
@@ -337,6 +336,7 @@ function make_unit(x,y,faction,base)
 		base=base,
 		moved=false,
 	}
+	if (base.carries) unit.carrying={}
 	setmetatable(unit, actor_metatable)
 	add(units, unit)
 	update_visible()
